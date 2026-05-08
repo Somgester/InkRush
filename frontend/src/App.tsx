@@ -3,6 +3,7 @@ import { io, Socket } from 'socket.io-client';
 import JoinRoom from './components/JoinRoom';
 import Chat from './components/Chat';
 import PlayerList from './components/PlayerList';
+import WordSelection from './components/WordSelection';
 
 interface Player {
     id: string;
@@ -72,6 +73,7 @@ function App() {
 
     const handleSendMessage = (text: string) => roomId && socket.emit('send_message', { roomId, text });
     const handleStartGame = () => roomId && socket.emit('start_game', { roomId });
+    const handleWordSelect = (word: string) => roomId && socket.emit('choose_word', { roomId, word });
 
     const currentPlayer = roomData?.players.find(p => p.id === socket.id);
     const isArtist = !!currentPlayer?.isDrawing;
@@ -213,6 +215,24 @@ function App() {
                             )}
                         </div>
                     )}
+
+                    {roomData.status === 'WORD_SELECTION' && isArtist && (
+                        <WordSelection words={roomData.wordChoices} onSelect={handleWordSelect} />
+                    )}
+
+                    {roomData.status === 'WORD_SELECTION' && !isArtist && (
+                        <div className="absolute inset-0 bg-white/90 backdrop-blur-md flex items-center justify-center z-30 animate-in fade-in duration-500">
+                            <div className="text-center p-12 bg-gray-50 rounded-[3rem] border-4 border-white shadow-2xl transform rotate-1">
+                                <p className="text-2xl font-black text-gray-800 uppercase tracking-tighter mb-4 italic">Artist is picking...</p>
+                                <div className="flex space-x-2 justify-center">
+                                    <div className="w-4 h-4 bg-blue-500 rounded-full animate-bounce [animation-delay:-0.3s] shadow-md shadow-blue-500/20" />
+                                    <div className="w-4 h-4 bg-blue-500 rounded-full animate-bounce [animation-delay:-0.15s] shadow-md shadow-blue-500/20" />
+                                    <div className="w-4 h-4 bg-blue-500 rounded-full animate-bounce shadow-md shadow-blue-500/20" />
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     <div className="flex-1 flex items-center justify-center bg-gray-50 border-4 border-dashed border-gray-200 m-8 rounded-[3rem]">
                         <p className="text-gray-400 font-black uppercase tracking-widest italic">Canvas feature coming soon...</p>
                     </div>
