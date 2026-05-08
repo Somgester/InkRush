@@ -27,13 +27,11 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
     res.status(err.status || 500).json({ error: err.message });
 });
 
-const startServer = async (): Promise<void> => {
+if (process.env.NODE_ENV !== 'production') {
     app.listen(port, () => {
         console.log(`Health check endpoint: http://localhost:${port}/health`);
         console.log(`yaha chal raha hu bhai: http://localhost:${port}/`);
     });
-};
-
-void startServer();
+}
 
 export default app;
