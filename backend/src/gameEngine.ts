@@ -29,6 +29,7 @@ export class GameEngine {
 
         room.status = 'WORD_SELECTION';
         room.currentRound = 1;
+        room.drawnPlayerIds = [];
         this.selectRandomArtist(room);
         this.startWordSelection(room);
     }
@@ -39,13 +40,13 @@ export class GameEngine {
             p.hasGuessed = false;
         });
 
-        const eligiblePlayers = room.players.filter(player => player.id !== room.currentArtistId);
-        const pool = eligiblePlayers.length > 0 ? eligiblePlayers : room.players;
-        const nextArtist = pool[Math.floor(Math.random() * pool.length)];
+        const eligiblePlayers = room.players.filter(p => !room.drawnPlayerIds.includes(p.id));
+        const nextArtist = eligiblePlayers[Math.floor(Math.random() * eligiblePlayers.length)];
 
         if (!nextArtist) return;
 
         room.currentArtistId = nextArtist.id;
+        room.drawnPlayerIds.push(nextArtist.id);
         nextArtist.isDrawing = true;
     }
 
@@ -116,6 +117,8 @@ export class GameEngine {
         const room = this.rooms.get(roomId);
         if (!room) return;
 
+        room.drawnPlayerIds = room.drawnPlayerIds.filter(id => id !== playerId);
+
         if (room.currentArtistId === playerId && (room.status === 'WORD_SELECTION' || room.status === 'DRAWING')) {
             this.endRound(room);
         }
@@ -132,11 +135,19 @@ export class GameEngine {
         
         this.broadcastRoomData(room);
 
+        const isRoundComplete = room.drawnPlayerIds.length >= room.players.length;
+
         this.startTimer(room, () => {
-            if (this.shouldEndGame(room)) {
-                this.endGame(room);
+            if (isRoundComplete) {
+                if (this.shouldEndGame(room)) {
+                    this.endGame(room);
+                } else {
+                    room.currentRound++;
+                    room.drawnPlayerIds = [];
+                    this.selectRandomArtist(room);
+                    this.startWordSelection(room);
+                }
             } else {
-                room.currentRound++;
                 this.selectRandomArtist(room);
                 this.startWordSelection(room);
             }

@@ -30,6 +30,7 @@ interface Room {
     totalRounds: number;
     timer: number;
     wordChoices: string[];
+    drawnPlayerIds: string[];
     currentWord?: string;
 }
 

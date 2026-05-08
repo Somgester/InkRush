@@ -26,4 +26,5 @@ export interface Room {
     currentWord?: string;
     timer: number;
     wordChoices: string[];
+    drawnPlayerIds: string[];
 }

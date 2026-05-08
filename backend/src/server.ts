@@ -54,7 +54,8 @@ io.on('connection', (socket) => {
                 currentRound: 0,
                 totalRounds,
                 timer: 0,
-                wordChoices: []
+                wordChoices: [],
+                drawnPlayerIds: []
             });
         }
 
