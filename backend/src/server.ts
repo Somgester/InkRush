@@ -148,7 +148,7 @@ io.on('connection', (socket) => {
         }
     });
 
-    socket.on('draw_move', ({ roomId, ...data }: { roomId: string; [key: string]: any }) => {
+    socket.on('draw_move', ({ roomId, ...data }: { roomId: string; [key: string]: unknown }) => {
         socket.to(roomId).emit('draw_move', data);
     });
 
@@ -188,8 +188,7 @@ io.on('connection', (socket) => {
     });
 });
 
-app.use((err: any, req: Request, res: Response, next: NextFunction) => {
-    void next;
+app.use((err: Error & { status?: number }, req: Request, res: Response, _next: NextFunction) => {
     console.error(err);
     res.status(err.status || 500).json({ error: err.message });
 });

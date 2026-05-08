@@ -1,5 +1,5 @@
 import { Server } from 'socket.io';
-import { Room, Player, GameStatus } from './types.js';
+import { Room } from './types.js';
 import { getRandomWords } from './words.js';
 import { levenshteinDistance } from './utils.js';
 import { config } from './config.js';
