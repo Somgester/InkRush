@@ -14,7 +14,8 @@ const frontendOrigin = config.frontendUrl || '*';
 const systemMessageSender = config.systemMessageSender;
 
 app.use(cors({
-    origin: '*',
+    origin: frontendOrigin,
+    credentials: true,
 }));
 
 app.use(express.json());
@@ -23,7 +24,7 @@ app.use(express.urlencoded({ extended: true }));
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
     cors: {
-        origin: '*',
+        origin: frontendOrigin,
         methods: ['GET', 'POST'],
     },
 });
