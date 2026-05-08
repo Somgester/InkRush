@@ -10,7 +10,7 @@ const app = express();
 const port = config.port;
 const maxPlayersPerRoom = config.maxPlayersPerRoom;
 const totalRounds = config.totalRounds;
-const frontendOrigin = config.frontendUrl;
+const frontendOrigin = config.frontendUrl || '*';
 const systemMessageSender = config.systemMessageSender;
 
 app.use(cors({
