@@ -4,6 +4,7 @@ import JoinRoom from './components/JoinRoom';
 import Chat from './components/Chat';
 import PlayerList from './components/PlayerList';
 import WordSelection from './components/WordSelection';
+import Canvas from './components/Canvas';
 
 interface Player {
     id: string;
@@ -76,6 +77,7 @@ function App() {
     const handleWordSelect = (word: string) => roomId && socket.emit('choose_word', { roomId, word });
 
     const currentPlayer = roomData?.players.find(p => p.id === socket.id);
+    const isDrawingEnabled = !!(currentPlayer?.isDrawing && roomData?.status === 'DRAWING');
     const isArtist = !!currentPlayer?.isDrawing;
 
     if (!roomData) {
@@ -233,9 +235,7 @@ function App() {
                         </div>
                     )}
 
-                    <div className="flex-1 flex items-center justify-center bg-gray-50 border-4 border-dashed border-gray-200 m-8 rounded-[3rem]">
-                        <p className="text-gray-400 font-black uppercase tracking-widest italic">Canvas feature coming soon...</p>
-                    </div>
+                    <Canvas socket={socket} roomId={roomData.id} isDrawingEnabled={isDrawingEnabled} />
                 </div>
 
                 {/* Right Side: Chat Area */}
