@@ -12,6 +12,7 @@ export const config = {
   wordSelectionSeconds: Number(process.env.WORD_SELECTION_SECONDS) || 15,
   drawingSeconds: Number(process.env.DRAWING_SECONDS) || 30,
   roundEndSeconds: Number(process.env.ROUND_END_SECONDS) || 5,
+  gameEndSeconds: Number(process.env.GAME_END_SECONDS) || 10,
 
   guessProximityThreshold: Number(process.env.GUESS_PROXIMITY_THRESHOLD) || 1,
 

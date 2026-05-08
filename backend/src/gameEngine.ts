@@ -11,6 +11,7 @@ export class GameEngine {
     private readonly wordSelectionSeconds = config.wordSelectionSeconds;
     private readonly drawingSeconds = config.drawingSeconds;
     private readonly roundEndSeconds = config.roundEndSeconds;
+    private readonly gameEndSeconds = config.gameEndSeconds;
     private readonly guessProximityThreshold = config.guessProximityThreshold;
     private readonly minGuessPoints = config.minGuessPoints;
     private readonly maxGuessPoints = config.maxGuessPoints;
@@ -121,6 +122,11 @@ export class GameEngine {
 
         if (room.currentArtistId === playerId && (room.status === 'WORD_SELECTION' || room.status === 'DRAWING')) {
             this.endRound(room);
+        } else if (room.status === 'DRAWING') {
+            const allGuessed = room.players.every(p => p.isDrawing || p.hasGuessed);
+            if (allGuessed && room.players.length >= this.minPlayersToStart) {
+                this.endRound(room);
+            }
         }
 
         if (room.players.length < this.minPlayersToStart && room.status !== 'LOBBY') {
@@ -160,12 +166,27 @@ export class GameEngine {
 
     private endGame(room: Room) {
         this.stopTimer(room.id);
-        room.status = 'LOBBY';
-        room.currentRound = 0;
+        room.status = 'GAME_OVER';
+        room.timer = this.gameEndSeconds;
         room.currentArtistId = undefined;
         room.currentWord = undefined;
         
         this.broadcastRoomData(room);
+
+        this.startTimer(room, () => {
+            room.status = 'LOBBY';
+            room.currentRound = 0;
+            room.timer = 0;
+            
+            // Reset player states for next game
+            room.players.forEach(player => {
+                player.score = 0;
+                player.isDrawing = false;
+                player.hasGuessed = false;
+            });
+
+            this.broadcastRoomData(room);
+        });
     }
 
     private startTimer(room: Room, callback: () => void) {

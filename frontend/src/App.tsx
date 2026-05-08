@@ -5,6 +5,7 @@ import Chat from './components/Chat';
 import PlayerList from './components/PlayerList';
 import WordSelection from './components/WordSelection';
 import Canvas from './components/Canvas';
+import Podium from './components/Podium';
 
 interface Player {
     id: string;
@@ -25,7 +26,7 @@ interface Room {
     id: string;
     hostId?: string;
     players: Player[];
-    status: 'LOBBY' | 'WORD_SELECTION' | 'DRAWING' | 'ROUND_END';
+    status: 'LOBBY' | 'WORD_SELECTION' | 'DRAWING' | 'ROUND_END' | 'GAME_OVER';
     currentRound: number;
     totalRounds: number;
     timer: number;
@@ -151,6 +152,11 @@ function App() {
                              <span className="text-sm sm:text-xl font-black text-white uppercase">The word was: {roomData.currentWord}</span>
                         </div>
                     )}
+                    {roomData.status === 'GAME_OVER' && (
+                        <div className="bg-blue-600 px-4 sm:px-8 py-2 rounded-full shadow-lg border-b-4 border-blue-800 animate-pulse max-w-full">
+                            <span className="text-sm sm:text-xl font-black text-white uppercase tracking-widest">Final Standings!</span>
+                        </div>
+                    )}
                     {roomData.status === 'WORD_SELECTION' && (
                          <div className="bg-yellow-400 px-4 sm:px-8 py-2 rounded-full shadow-lg border-b-4 border-yellow-600 animate-pulse max-w-full">
                             <span className="text-sm sm:text-xl font-black text-white uppercase">Choosing a word...</span>
@@ -234,6 +240,10 @@ function App() {
                                 </div>
                             </div>
                         </div>
+                    )}
+
+                    {roomData.status === 'GAME_OVER' && (
+                        <Podium players={roomData.players} />
                     )}
 
                     <Canvas socket={socket} roomId={roomData.id} isDrawingEnabled={isDrawingEnabled} />

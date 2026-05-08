@@ -13,7 +13,7 @@ export interface Message {
     isSystem?: boolean;
 }
 
-export type GameStatus = 'LOBBY' | 'WORD_SELECTION' | 'DRAWING' | 'ROUND_END';
+export type GameStatus = 'LOBBY' | 'WORD_SELECTION' | 'DRAWING' | 'ROUND_END' | 'GAME_OVER';
 
 export interface Room {
     id: string;
