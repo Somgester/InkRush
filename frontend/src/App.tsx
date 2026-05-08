@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 import JoinRoom from './components/JoinRoom';
+import Chat from './components/Chat';
+import PlayerList from './components/PlayerList';
 
 interface Player {
     id: string;
@@ -8,6 +10,13 @@ interface Player {
     score: number;
     isDrawing: boolean;
     hasGuessed: boolean;
+}
+
+interface Message {
+    id: string;
+    sender: string;
+    text: string;
+    isSystem?: boolean;
 }
 
 interface Room {
@@ -30,20 +39,28 @@ function App() {
     const [username, setUsername] = useState('');
     const [roomId, setRoomId] = useState('');
     const [roomData, setRoomData] = useState<Room | null>(null);
+    const [messages, setMessages] = useState<Message[]>([]);
+    const [timer, setTimer] = useState(0);
 
     useEffect(() => {
         function onConnect() { setIsConnected(true); }
         function onDisconnect() { setIsConnected(false); }
-        function onRoomData(data: Room) { setRoomData(data); }
+        function onRoomData(data: Room) { setRoomData(data); setTimer(data.timer); }
+        function onNewMessage(message: Message) { setMessages((prev) => [...prev, message]); }
+        function onTimerUpdate(newTimer: number) { setTimer(newTimer); }
 
         socket.on('connect', onConnect);
         socket.on('disconnect', onDisconnect);
         socket.on('room_data', onRoomData);
+        socket.on('new_message', onNewMessage);
+        socket.on('timer_update', onTimerUpdate);
 
         return () => {
             socket.off('connect', onConnect);
             socket.off('disconnect', onDisconnect);
             socket.off('room_data', onRoomData);
+            socket.off('new_message', onNewMessage);
+            socket.off('timer_update', onTimerUpdate);
         };
     }, []);
 
@@ -52,6 +69,12 @@ function App() {
         setRoomId(room);
         socket.emit('join_room', { username: name, roomId: room });
     };
+
+    const handleSendMessage = (text: string) => roomId && socket.emit('send_message', { roomId, text });
+    const handleStartGame = () => roomId && socket.emit('start_game', { roomId });
+
+    const currentPlayer = roomData?.players.find(p => p.id === socket.id);
+    const isArtist = !!currentPlayer?.isDrawing;
 
     if (!roomData) {
         return (
@@ -76,10 +99,130 @@ function App() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center">
-            <h1 className="text-4xl font-black text-blue-600">Room Joined: {roomId}</h1>
-            <p className="text-xl font-bold mt-4">Username: {username}</p>
-            <p className="mt-8 text-gray-400 font-bold italic">More features coming in next commits...</p>
+        <div className="min-h-screen bg-gray-50 flex flex-col h-screen overflow-hidden font-sans text-gray-800">
+            {/* Header */}
+            <header className="bg-white px-4 sm:px-6 lg:px-8 py-3 sm:py-4 flex flex-col gap-3 sm:gap-4 lg:flex-row lg:justify-between lg:items-center z-20 shadow-[0_4px_20px_rgba(0,0,0,0.05)] border-b-4 border-gray-100">
+                <div className="flex flex-wrap items-center gap-3 sm:gap-6 lg:gap-10 justify-between lg:justify-start">
+                    <h1 className="text-2xl sm:text-3xl font-black text-blue-600 tracking-tighter italic transform -rotate-2 hover:rotate-0 transition-transform cursor-default">INKRUSH</h1>
+                    
+                    <div className="flex items-center gap-3 sm:gap-4 bg-gray-50 px-4 sm:px-6 py-2 rounded-2xl border-2 border-gray-100">
+                        <div className="flex flex-col">
+                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">Round</span>
+                            <span className="text-lg sm:text-xl font-black text-gray-800 leading-none tabular-nums">
+                                {roomData.currentRound}<span className="text-gray-300 mx-1">/</span>{roomData.totalRounds}
+                            </span>
+                        </div>
+                        <div className="w-px h-8 bg-gray-200" />
+                        <div className="flex flex-col min-w-[60px]">
+                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">Time Left</span>
+                            <span className={`text-lg sm:text-xl font-black leading-none tabular-nums ${timer < 10 ? 'text-red-500 animate-pulse' : 'text-blue-600'}`}>
+                                {timer}s
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="flex-1 flex flex-col items-start lg:items-center">
+                    {roomData.status === 'DRAWING' && (
+                        <div className="flex flex-col items-start lg:items-center animate-in slide-in-from-top duration-500">
+                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">
+                                {isArtist ? 'YOUR WORD TO DRAW' : 'WHAT IS BEING DRAWN?'}
+                            </span>
+                            <div className="bg-blue-600 px-4 sm:px-8 py-2 rounded-full shadow-lg shadow-blue-500/20 border-b-4 border-blue-800 max-w-full overflow-hidden text-ellipsis">
+                                {isArtist ? (
+                                    <span className="text-lg sm:text-2xl font-black text-white tracking-widest uppercase break-words">
+                                        {roomData.currentWord}
+                                    </span>
+                                ) : (
+                                    <span className="text-lg sm:text-2xl font-black text-white tracking-[0.2em] sm:tracking-[0.4em] translate-x-[0.1em] sm:translate-x-[0.2em] whitespace-nowrap">
+                                        {roomData.currentWord?.replace(/[a-zA-Z]/g, '_')}
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+                    )}
+                    {roomData.status === 'ROUND_END' && (
+                        <div className="bg-green-500 px-4 sm:px-8 py-2 rounded-full shadow-lg border-b-4 border-green-700 animate-bounce max-w-full">
+                             <span className="text-sm sm:text-xl font-black text-white uppercase">The word was: {roomData.currentWord}</span>
+                        </div>
+                    )}
+                    {roomData.status === 'WORD_SELECTION' && (
+                         <div className="bg-yellow-400 px-4 sm:px-8 py-2 rounded-full shadow-lg border-b-4 border-yellow-600 animate-pulse max-w-full">
+                            <span className="text-sm sm:text-xl font-black text-white uppercase">Choosing a word...</span>
+                        </div>
+                    )}
+                    {roomData.status === 'LOBBY' && (
+                         <div className="bg-orange-400 px-4 sm:px-8 py-2 rounded-full shadow-lg border-b-4 border-orange-600 max-w-full">
+                            <span className="text-sm sm:text-xl font-black text-white uppercase tracking-widest">Waiting Room</span>
+                        </div>
+                    )}
+                </div>
+
+                <div className="flex items-center gap-3 sm:gap-6 self-end lg:self-auto">
+                    <div className="flex flex-col text-right">
+                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">Player</span>
+                        <span className="text-sm font-black text-gray-900 uppercase tracking-tighter flex items-center gap-2 justify-end">
+                            {username}
+                            {currentPlayer?.id === roomData.hostId && (
+                                <span className="text-[10px] font-black px-2 py-1 rounded-full bg-yellow-400 text-blue-900 border border-yellow-500">HOST</span>
+                            )}
+                        </span>
+                    </div>
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-black text-lg sm:text-xl shadow-md border-b-4 border-blue-800">
+                        {username.charAt(0).toUpperCase()}
+                    </div>
+                </div>
+            </header>
+
+            {/* Main Content */}
+            <main className="flex-1 flex flex-col lg:flex-row overflow-y-auto lg:overflow-hidden p-3 sm:p-4 lg:p-6 gap-3 sm:gap-4 lg:gap-6 relative bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:24px_24px]">
+                {/* Left Side: Scoreboard */}
+                <div className="order-1 lg:order-1 lg:shrink-0">
+                    <PlayerList players={roomData.players} hostId={roomData.hostId} />
+                </div>
+
+                {/* Center: Placeholder for Canvas Area */}
+                <div className="order-2 lg:order-2 flex-1 min-h-[55vh] lg:min-h-0 bg-white rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.05)] flex flex-col border-4 border-white overflow-hidden relative ring-8 ring-gray-100/50">
+                    {roomData.status === 'LOBBY' && (
+                        <div className="absolute inset-0 bg-white/90 backdrop-blur-md flex flex-col items-center justify-center z-30 animate-in fade-in duration-500">
+                            <div className="relative mb-10">
+                                <div className="absolute -inset-4 bg-blue-500/20 rounded-full blur-2xl animate-pulse" />
+                                <h2 className="relative text-3xl sm:text-5xl font-black text-gray-800 tracking-tighter italic transform -rotate-1 text-center px-4">Ready to start?</h2>
+                            </div>
+                            
+                            {roomData.players.length >= 2 && currentPlayer?.id === roomData.hostId ? (
+                                <button
+                                    onClick={handleStartGame}
+                                    className="group relative px-8 sm:px-12 py-4 sm:py-5 bg-blue-600 rounded-2xl shadow-xl hover:shadow-blue-500/40 transition-all transform hover:scale-105 active:scale-95 border-b-8 border-blue-800 mx-4"
+                                >
+                                    <span className="text-lg sm:text-2xl font-black text-white tracking-widest uppercase">START ENGINE</span>
+                                    <div className="absolute -top-3 -right-2 sm:-right-3 bg-yellow-400 text-blue-900 text-[10px] font-black px-2 py-1 rounded-md rotate-12 border-2 border-white shadow-sm">
+                                        LET'S GO!
+                                    </div>
+                                </button>
+                            ) : roomData.players.length >= 2 ? (
+                                <div className="bg-blue-50 px-6 sm:px-8 py-4 rounded-2xl border-2 border-blue-100 text-center mx-4">
+                                    <p className="text-blue-600 font-black uppercase tracking-widest text-sm mb-1">Waiting for host</p>
+                                    <p className="text-blue-400 font-bold text-xs uppercase italic">Only the first player can start</p>
+                                </div>
+                            ) : (
+                                <div className="bg-gray-100 px-6 sm:px-8 py-4 rounded-2xl border-2 border-gray-200 text-center mx-4">
+                                    <p className="text-gray-400 font-black uppercase tracking-widest text-sm mb-1">Waiting for more players</p>
+                                    <p className="text-gray-300 font-bold text-xs uppercase italic">Minimum 2 required to play</p>
+                                </div>
+                            )}
+                        </div>
+                    )}
+                    <div className="flex-1 flex items-center justify-center bg-gray-50 border-4 border-dashed border-gray-200 m-8 rounded-[3rem]">
+                        <p className="text-gray-400 font-black uppercase tracking-widest italic">Canvas feature coming soon...</p>
+                    </div>
+                </div>
+
+                {/* Right Side: Chat Area */}
+                <div className="order-3 lg:shrink-0 w-full lg:w-80 h-[380px] sm:h-[420px] lg:h-full flex flex-col">
+                    <Chat messages={messages} onSendMessage={handleSendMessage} />
+                </div>
+            </main>
         </div>
     );
 }
