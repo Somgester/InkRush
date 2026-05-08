@@ -77,8 +77,7 @@ io.on('connection', (socket) => {
             username,
             score: 0,
             isDrawing: false,
-            hasGuessed: false,
-            hasGuessedCorrectly: false
+            hasGuessed: false
         };
 
         room.players.push(newPlayer);

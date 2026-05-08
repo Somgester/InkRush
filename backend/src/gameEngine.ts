@@ -39,7 +39,6 @@ export class GameEngine {
         room.players.forEach(p => {
             p.isDrawing = false;
             p.hasGuessed = false;
-            p.hasGuessedCorrectly = false;
         });
 
         const eligiblePlayers = room.players.filter(p => !room.drawnPlayerIds.includes(p.id));
@@ -89,7 +88,6 @@ export class GameEngine {
 
         if (guess.toLowerCase() === room.currentWord.toLowerCase()) {
             player.hasGuessed = true;
-            player.hasGuessedCorrectly = true;
             
             const guessersCount = room.players.filter(p => p.hasGuessed).length;
             const points = Math.max(this.minGuessPoints, this.maxGuessPoints - (guessersCount - 1) * this.pointDeductionPerGuesser);
@@ -185,7 +183,6 @@ export class GameEngine {
                 player.score = 0;
                 player.isDrawing = false;
                 player.hasGuessed = false;
-                player.hasGuessedCorrectly = false;
             });
 
             this.broadcastRoomData(room);

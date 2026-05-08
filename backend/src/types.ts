@@ -4,7 +4,6 @@ export interface Player {
     score: number;
     isDrawing: boolean;
     hasGuessed: boolean;
-    hasGuessedCorrectly: boolean;
 }
 
 export interface Message {
