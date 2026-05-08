@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 import JoinRoom from './components/JoinRoom';
 import Chat from './components/Chat';
@@ -6,34 +6,7 @@ import PlayerList from './components/PlayerList';
 import WordSelection from './components/WordSelection';
 import Canvas from './components/Canvas';
 import Podium from './components/Podium';
-
-interface Player {
-    id: string;
-    username: string;
-    score: number;
-    isDrawing: boolean;
-    hasGuessed: boolean;
-}
-
-interface Message {
-    id: string;
-    sender: string;
-    text: string;
-    isSystem?: boolean;
-}
-
-interface Room {
-    id: string;
-    hostId?: string;
-    players: Player[];
-    status: 'LOBBY' | 'WORD_SELECTION' | 'DRAWING' | 'ROUND_END' | 'GAME_OVER';
-    currentRound: number;
-    totalRounds: number;
-    timer: number;
-    wordChoices: string[];
-    drawnPlayerIds: string[];
-    currentWord?: string;
-}
+import type { Message, Room } from './types';
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL ?? 'http://localhost:5000';
 const socket: Socket = io(backendUrl);
@@ -45,6 +18,7 @@ function App() {
     const [roomData, setRoomData] = useState<Room | null>(null);
     const [messages, setMessages] = useState<Message[]>([]);
     const [timer, setTimer] = useState(0);
+    const previousCorrectGuessRef = useRef(false);
 
     useEffect(() => {
         function onConnect() { setIsConnected(true); }
@@ -79,6 +53,21 @@ function App() {
     const handleWordSelect = (word: string) => roomId && socket.emit('choose_word', { roomId, word });
 
     const currentPlayer = roomData?.players.find(p => p.id === socket.id);
+
+    useEffect(() => {
+        if (!currentPlayer) {
+            previousCorrectGuessRef.current = false;
+            return;
+        }
+
+        if (currentPlayer.hasGuessedCorrectly && !previousCorrectGuessRef.current) {
+            const successSound = new Audio(`${import.meta.env.BASE_URL}sounds/mixkit-winning-a-coin-video-game-2069.wav`);
+            void successSound.play().catch(() => undefined);
+        }
+
+        previousCorrectGuessRef.current = currentPlayer.hasGuessedCorrectly;
+    }, [currentPlayer]);
+
     const isDrawingEnabled = !!(currentPlayer?.isDrawing && roomData?.status === 'DRAWING');
     const isArtist = !!currentPlayer?.isDrawing;
 
