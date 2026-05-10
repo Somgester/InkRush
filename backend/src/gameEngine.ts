@@ -54,7 +54,14 @@ export class GameEngine {
 
     private startWordSelection(room: Room) {
         room.status = 'WORD_SELECTION';
-        room.wordChoices = getRandomWords(3);
+        
+        const availableWords = room.settings.customWords.length > 0 
+            ? [...room.settings.customWords, ...getRandomWords(20)] 
+            : getRandomWords(50);
+            
+        const shuffled = availableWords.sort(() => 0.5 - Math.random());
+        room.wordChoices = shuffled.slice(0, 3);
+        
         room.timer = this.wordSelectionSeconds;
         
         this.broadcastRoomData(room);
@@ -69,7 +76,7 @@ export class GameEngine {
 
         room.currentWord = word;
         room.status = 'DRAWING';
-        room.timer = this.drawingSeconds;
+        room.timer = room.settings.drawingTime;
         room.wordChoices = [];
         
         this.io.to(roomId).emit('clear_canvas');

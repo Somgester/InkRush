@@ -6,7 +6,8 @@ import PlayerList from './components/PlayerList';
 import WordSelection from './components/WordSelection';
 import Canvas from './components/Canvas';
 import Podium from './components/Podium';
-import type { Message, Room } from './types';
+import LobbySettings from './components/LobbySettings';
+import type { Message, Room, RoomSettings } from './types';
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL ?? 'http://localhost:5000';
 const socket: Socket = io(backendUrl);
@@ -22,7 +23,10 @@ function App() {
     const previousCorrectGuessRef = useRef(false);
     const copyFeedbackTimeoutRef = useRef<ReturnType<typeof window.setTimeout> | undefined>(undefined);
 
-    const initialRoomId = new URLSearchParams(window.location.search).get('room') || '';
+    const initialRoomId = new URLSearchParams(window.location.search).get('room') || 
+                         (window.location.search.startsWith('?') && !window.location.search.includes('=') 
+                             ? window.location.search.substring(1) 
+                             : '');
 
     useEffect(() => {
         function onConnect() { setIsConnected(true); }
@@ -62,6 +66,8 @@ function App() {
     const handleSendMessage = (text: string) => roomId && socket.emit('send_message', { roomId, text });
     const handleStartGame = () => roomId && socket.emit('start_game', { roomId });
     const handleWordSelect = (word: string) => roomId && socket.emit('choose_word', { roomId, word });
+    const handleUpdateSettings = (settings: Partial<RoomSettings>) => roomId && socket.emit('update_settings', { roomId, settings });
+
     const showCopyFeedback = (status: 'success' | 'error') => {
         setCopyStatus(status);
 
@@ -83,7 +89,7 @@ function App() {
             return;
         }
 
-        const url = `${window.location.origin}${window.location.pathname}?room=${encodeURIComponent(roomData.id)}`;
+        const url = `${window.location.origin}${window.location.pathname}?${roomData.id}`;
 
         try {
             await navigator.clipboard.writeText(url);
@@ -258,13 +264,23 @@ function App() {
                                 </button>
                             ) : roomData.players.length >= 2 ? (
                                 <div className="bg-blue-50 px-6 sm:px-8 py-4 rounded-2xl border-2 border-blue-100 text-center mx-4">
-                                    <p className="text-blue-600 font-black uppercase tracking-widest text-sm mb-1">Waiting for host</p>
-                                    <p className="text-blue-400 font-bold text-xs uppercase italic">Only the first player can start</p>
+                                    <p className="text-blue-600 font-black uppercase tracking-widest text-sm mb-1">Waiting for host to start the game</p>
+                                    <p className="text-blue-400 font-bold text-xs uppercase italic">Only the room host can start the session</p>
                                 </div>
                             ) : (
                                 <div className="bg-gray-100 px-6 sm:px-8 py-4 rounded-2xl border-2 border-gray-200 text-center mx-4">
                                     <p className="text-gray-400 font-black uppercase tracking-widest text-sm mb-1">Waiting for more players</p>
                                     <p className="text-gray-300 font-bold text-xs uppercase italic">Minimum 2 required to play</p>
+                                </div>
+                            )}
+
+                            {currentPlayer?.id === roomData.hostId && (
+                                <div className="mt-8 w-full max-w-md px-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                                    <LobbySettings 
+                                        settings={roomData.settings} 
+                                        onUpdate={handleUpdateSettings} 
+                                        isHost={true} 
+                                    />
                                 </div>
                             )}
                         </div>

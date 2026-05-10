@@ -55,16 +55,22 @@ io.on('connection', (socket) => {
                 totalRounds,
                 timer: 0,
                 wordChoices: [],
-                drawnPlayerIds: []
+                drawnPlayerIds: [],
+                settings: {
+                    maxPlayers: maxPlayersPerRoom,
+                    totalRounds: totalRounds,
+                    drawingTime: config.drawingSeconds,
+                    customWords: []
+                }
             });
         }
 
         const room = rooms.get(roomId)!;
-        if (room.players.length >= maxPlayersPerRoom) {
+        if (room.players.length >= room.settings.maxPlayers) {
             socket.emit('new_message', {
                 id: Date.now().toString(),
                 sender: systemMessageSender,
-                text: `Room is full. Maximum ${maxPlayersPerRoom} players allowed.`,
+                text: `Room is full. Maximum ${room.settings.maxPlayers} players allowed.`,
                 isSystem: true
             } satisfies Message);
             return;
@@ -102,6 +108,15 @@ io.on('connection', (socket) => {
         if (!room || room.hostId !== socket.id) return;
 
         gameEngine.startGame(roomId);
+    });
+
+    socket.on('update_settings', ({ roomId, settings }: { roomId: string; settings: any }) => {
+        const room = rooms.get(roomId);
+        if (!room || room.hostId !== socket.id || room.status !== 'LOBBY') return;
+
+        room.settings = { ...room.settings, ...settings };
+        room.totalRounds = room.settings.totalRounds; // Sync for consistency
+        io.to(roomId).emit('room_data', room);
     });
 
     socket.on('choose_word', ({ roomId, word }: { roomId: string; word: string }) => {
@@ -152,6 +167,10 @@ io.on('connection', (socket) => {
 
     socket.on('draw_move', ({ roomId, ...data }: { roomId: string; [key: string]: unknown }) => {
         socket.to(roomId).emit('draw_move', data);
+    });
+
+    socket.on('draw_fill', ({ roomId, ...data }: { roomId: string; [key: string]: unknown }) => {
+        socket.to(roomId).emit('draw_fill', data);
     });
 
     socket.on('clear_canvas', ({ roomId }: { roomId: string }) => {
