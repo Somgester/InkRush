@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 
 interface JoinRoomProps {
     onJoin: (username: string, roomId: string) => void;
+    initialRoomId?: string;
 }
 
-const JoinRoom: React.FC<JoinRoomProps> = ({ onJoin }) => {
+const JoinRoom: React.FC<JoinRoomProps> = ({ onJoin, initialRoomId = '' }) => {
     const [username, setUsername] = useState('');
-    const [roomId, setRoomId] = useState('');
+    const [roomId, setRoomId] = useState(initialRoomId);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
