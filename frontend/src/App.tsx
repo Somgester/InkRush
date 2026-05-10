@@ -18,8 +18,9 @@ function App() {
     const [roomData, setRoomData] = useState<Room | null>(null);
     const [messages, setMessages] = useState<Message[]>([]);
     const [timer, setTimer] = useState(0);
-    const [copied, setCopied] = useState(false);
+    const [copyStatus, setCopyStatus] = useState<'idle' | 'success' | 'error'>('idle');
     const previousCorrectGuessRef = useRef(false);
+    const copyFeedbackTimeoutRef = useRef<ReturnType<typeof window.setTimeout> | undefined>(undefined);
 
     const initialRoomId = new URLSearchParams(window.location.search).get('room') || '';
 
@@ -45,6 +46,13 @@ function App() {
         };
     }, []);
 
+    useEffect(() => () => {
+        if (copyFeedbackTimeoutRef.current !== undefined) {
+            window.clearTimeout(copyFeedbackTimeoutRef.current);
+            copyFeedbackTimeoutRef.current = undefined;
+        }
+    }, []);
+
     const handleJoinRoom = (name: string, room: string) => {
         setUsername(name);
         setRoomId(room);
@@ -54,13 +62,35 @@ function App() {
     const handleSendMessage = (text: string) => roomId && socket.emit('send_message', { roomId, text });
     const handleStartGame = () => roomId && socket.emit('start_game', { roomId });
     const handleWordSelect = (word: string) => roomId && socket.emit('choose_word', { roomId, word });
+    const showCopyFeedback = (status: 'success' | 'error') => {
+        setCopyStatus(status);
 
-    const handleCopyInviteLink = () => {
+        if (copyFeedbackTimeoutRef.current !== undefined) {
+            window.clearTimeout(copyFeedbackTimeoutRef.current);
+        }
+
+        copyFeedbackTimeoutRef.current = window.setTimeout(() => {
+            setCopyStatus('idle');
+            copyFeedbackTimeoutRef.current = undefined;
+        }, 2000);
+    };
+
+    const handleCopyInviteLink = async () => {
         if (!roomData) return;
-        const url = `${window.location.origin}${window.location.pathname}?room=${roomData.id}`;
-        void navigator.clipboard.writeText(url);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
+
+        if (!navigator.clipboard?.writeText) {
+            showCopyFeedback('error');
+            return;
+        }
+
+        const url = `${window.location.origin}${window.location.pathname}?room=${encodeURIComponent(roomData.id)}`;
+
+        try {
+            await navigator.clipboard.writeText(url);
+            showCopyFeedback('success');
+        } catch {
+            showCopyFeedback('error');
+        }
     };
 
     const currentPlayer = roomData?.players.find(p => p.id === socket.id);
@@ -135,9 +165,9 @@ function App() {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
                         </svg>
                         Invite
-                        {copied && (
-                            <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-[10px] px-2 py-1 rounded-md animate-in fade-in slide-in-from-top-1">
-                                Copied!
+                        {copyStatus !== 'idle' && (
+                            <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-[10px] px-2 py-1 rounded-md animate-in fade-in slide-in-from-top-1 whitespace-nowrap">
+                                {copyStatus === 'success' ? 'Copied!' : 'Copy failed'}
                             </span>
                         )}
                     </button>
