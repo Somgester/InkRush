@@ -16,6 +16,13 @@ export interface Message {
 
 export type GameStatus = 'LOBBY' | 'WORD_SELECTION' | 'DRAWING' | 'ROUND_END' | 'GAME_OVER';
 
+export interface RoomSettings {
+    maxPlayers: number;
+    totalRounds: number;
+    drawingTime: number;
+    customWords: string[];
+}
+
 export interface Room {
     id: string;
     hostId?: string;
@@ -28,4 +35,5 @@ export interface Room {
     timer: number;
     wordChoices: string[];
     drawnPlayerIds: string[];
+    settings: RoomSettings;
 }
