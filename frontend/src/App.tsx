@@ -18,7 +18,10 @@ function App() {
     const [roomData, setRoomData] = useState<Room | null>(null);
     const [messages, setMessages] = useState<Message[]>([]);
     const [timer, setTimer] = useState(0);
+    const [copied, setCopied] = useState(false);
     const previousCorrectGuessRef = useRef(false);
+
+    const initialRoomId = new URLSearchParams(window.location.search).get('room') || '';
 
     useEffect(() => {
         function onConnect() { setIsConnected(true); }
@@ -52,6 +55,14 @@ function App() {
     const handleStartGame = () => roomId && socket.emit('start_game', { roomId });
     const handleWordSelect = (word: string) => roomId && socket.emit('choose_word', { roomId, word });
 
+    const handleCopyInviteLink = () => {
+        if (!roomData) return;
+        const url = `${window.location.origin}${window.location.pathname}?room=${roomData.id}`;
+        void navigator.clipboard.writeText(url);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    };
+
     const currentPlayer = roomData?.players.find(p => p.id === socket.id);
 
     useEffect(() => {
@@ -82,7 +93,7 @@ function App() {
                         Multiplayer Fun
                     </p>
                 </div>
-                <JoinRoom onJoin={handleJoinRoom} />
+                <JoinRoom onJoin={handleJoinRoom} initialRoomId={initialRoomId} />
                 <div className="mt-12 flex items-center space-x-3 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full border border-white/50 shadow-sm">
                     <div className={`w-3 h-3 rounded-full ${isConnected ? 'bg-green-400 animate-pulse' : 'bg-red-400'}`} />
                     <span className="text-sm font-black text-white uppercase tracking-widest">
@@ -115,6 +126,21 @@ function App() {
                             </span>
                         </div>
                     </div>
+
+                    <button
+                        onClick={handleCopyInviteLink}
+                        className="flex items-center gap-2 bg-blue-50 hover:bg-blue-100 text-blue-600 px-4 py-2 rounded-2xl border-2 border-blue-100 transition-all font-black text-xs uppercase tracking-widest relative"
+                    >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                        </svg>
+                        Invite
+                        {copied && (
+                            <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-[10px] px-2 py-1 rounded-md animate-in fade-in slide-in-from-top-1">
+                                Copied!
+                            </span>
+                        )}
+                    </button>
                 </div>
 
                 <div className="flex-1 flex flex-col items-start lg:items-center">
