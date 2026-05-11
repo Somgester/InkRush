@@ -61,7 +61,9 @@ io.on('connection', (socket) => {
                     totalRounds: totalRounds,
                     drawingTime: config.drawingSeconds,
                     customWords: []
-                }
+                },
+                customWordsPool: [],
+                defaultWordsPool: []
             });
         }
 

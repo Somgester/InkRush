@@ -1,6 +1,6 @@
 import { Server } from 'socket.io';
 import { Room } from './types.js';
-import { getRandomWords } from './words.js';
+import { getRandomWords, WORDS } from './words.js';
 import { levenshteinDistance } from './utils.js';
 import { config } from './config.js';
 
@@ -31,6 +31,9 @@ export class GameEngine {
         room.status = 'WORD_SELECTION';
         room.currentRound = 1;
         room.drawnPlayerIds = [];
+        room.customWordsPool = [...room.settings.customWords].sort(() => 0.5 - Math.random());
+        room.defaultWordsPool = getRandomWords(WORDS.length);
+
         this.selectRandomArtist(room);
         this.startWordSelection(room);
     }
@@ -55,13 +58,20 @@ export class GameEngine {
     private startWordSelection(room: Room) {
         room.status = 'WORD_SELECTION';
         
-        const availableWords = room.settings.customWords.length > 0 
-            ? [...room.settings.customWords, ...getRandomWords(20)] 
-            : getRandomWords(50);
-            
-        const shuffled = availableWords.sort(() => 0.5 - Math.random());
-        room.wordChoices = shuffled.slice(0, 3);
+        const choices: string[] = [];
+
+        while (choices.length < 3 && room.customWordsPool.length > 0) {
+            choices.push(room.customWordsPool.shift()!);
+        }
         
+        while (choices.length < 3) {
+            if (room.defaultWordsPool.length === 0) {
+                room.defaultWordsPool = getRandomWords(WORDS.length);
+            }
+            choices.push(room.defaultWordsPool.shift()!);
+        }
+        
+        room.wordChoices = choices;
         room.timer = this.wordSelectionSeconds;
         
         this.broadcastRoomData(room);
@@ -73,6 +83,12 @@ export class GameEngine {
     public chooseWord(roomId: string, word: string) {
         const room = this.rooms.get(roomId);
         if (!room || room.status !== 'WORD_SELECTION') return;
+
+        room.wordChoices.forEach(choice => {
+            if (choice !== word && room.settings.customWords.includes(choice)) {
+                room.customWordsPool.push(choice);
+            }
+        });
 
         room.currentWord = word;
         room.status = 'DRAWING';
