@@ -36,4 +36,6 @@ export interface Room {
     wordChoices: string[];
     drawnPlayerIds: string[];
     settings: RoomSettings;
+    customWordsPool: string[];
+    defaultWordsPool: string[];
 }
