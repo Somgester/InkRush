@@ -49,6 +49,13 @@ function App() {
             socket.off('timer_update', onTimerUpdate);
         };
     }, []);
+    const pingServer = () => fetch(`${backendUrl}/health`).catch(() => {});
+
+    useEffect(() => {
+        pingServer();
+        const keepAlive = setInterval(pingServer, 5 * 60 * 1000);
+        return () => clearInterval(keepAlive);
+    }, []);
 
     useEffect(() => () => {
         if (copyFeedbackTimeoutRef.current !== undefined) {
@@ -60,11 +67,15 @@ function App() {
     const handleJoinRoom = (name: string, room: string) => {
         setUsername(name);
         setRoomId(room);
+        pingServer();
         socket.emit('join_room', { username: name, roomId: room });
     };
 
     const handleSendMessage = (text: string) => roomId && socket.emit('send_message', { roomId, text });
-    const handleStartGame = () => roomId && socket.emit('start_game', { roomId });
+    const handleStartGame = () => {
+        pingServer();
+        roomId && socket.emit('start_game', { roomId });
+    };
     const handleWordSelect = (word: string) => roomId && socket.emit('choose_word', { roomId, word });
     const handleUpdateSettings = (settings: Partial<RoomSettings>) => roomId && socket.emit('update_settings', { roomId, settings });
 
