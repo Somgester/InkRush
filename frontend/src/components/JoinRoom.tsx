@@ -62,10 +62,6 @@ const JoinRoom: React.FC<JoinRoomProps> = ({ onJoin, initialRoomId = '' }) => {
                         START DRAWING
                     </button>
                 </form>
-                
-                <p className="mt-6 text-center text-xs text-gray-400 font-bold uppercase tracking-widest">
-                    Build with ❤️ by Somgester
-                </p>
             </div>
         </div>
     );

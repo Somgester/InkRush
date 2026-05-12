@@ -38,8 +38,9 @@ const LobbySettings: React.FC<LobbySettingsProps> = ({ settings, onUpdate, isHos
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1">
-                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Max Players</label>
+                    <label htmlFor="maxPlayers" className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Max Players</label>
                     <select
+                        id="maxPlayers"
                         disabled={!isHost}
                         value={settings.maxPlayers}
                         onChange={(e) => handleChange('maxPlayers', parseInt(e.target.value))}
@@ -50,8 +51,9 @@ const LobbySettings: React.FC<LobbySettingsProps> = ({ settings, onUpdate, isHos
                 </div>
 
                 <div className="space-y-1">
-                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Total Rounds</label>
+                    <label htmlFor="totalRounds" className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Total Rounds</label>
                     <select
+                        id="totalRounds"
                         disabled={!isHost}
                         value={settings.totalRounds}
                         onChange={(e) => handleChange('totalRounds', parseInt(e.target.value))}
@@ -62,8 +64,9 @@ const LobbySettings: React.FC<LobbySettingsProps> = ({ settings, onUpdate, isHos
                 </div>
 
                 <div className="space-y-1">
-                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Drawing Time</label>
+                    <label htmlFor="drawingTime" className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Drawing Time</label>
                     <select
+                        id="drawingTime"
                         disabled={!isHost}
                         value={settings.drawingTime}
                         onChange={(e) => handleChange('drawingTime', parseInt(e.target.value))}
@@ -75,8 +78,9 @@ const LobbySettings: React.FC<LobbySettingsProps> = ({ settings, onUpdate, isHos
             </div>
 
             <div className="space-y-1">
-                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Custom Words (comma separated)</label>
+                <label htmlFor="customWords" className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Custom Words (comma separated)</label>
                 <textarea
+                    id="customWords"
                     disabled={!isHost}
                     value={wordsInput}
                     onChange={handleWordsChange}
