@@ -5,6 +5,7 @@ import { Server } from 'socket.io';
 import { Room, Player, Message } from './types.js';
 import { GameEngine } from './gameEngine.js';
 import { config } from './config.js';
+import { findAvailableRoom } from './utils.js';
 
 const app = express();
 const port = config.port;
@@ -60,7 +61,8 @@ io.on('connection', (socket) => {
                     maxPlayers: maxPlayersPerRoom,
                     totalRounds: totalRounds,
                     drawingTime: config.drawingSeconds,
-                    customWords: []
+                    customWords: [],
+                    isPublic: true
                 },
                 customWordsPool: [],
                 defaultWordsPool: []
@@ -103,6 +105,16 @@ io.on('connection', (socket) => {
             isSystem: true
         };
         io.to(roomId).emit('new_message', systemMessage);
+    });
+
+    socket.on('quick_join', () => {
+        const availableRoom = findAvailableRoom(Array.from(rooms.values()));
+
+        if (availableRoom) {
+            socket.emit('quick_join_success', { roomId: availableRoom.id });
+        } else {
+            socket.emit('no_rooms_available');
+        }
     });
 
     socket.on('start_game', ({ roomId }: { roomId: string }) => {

@@ -19,3 +19,15 @@ export const levenshteinDistance = (s: string, t: string): number => {
     }
     return arr[t.length]![s.length]!;
 };
+
+import { Room } from './types.js';
+
+export const findAvailableRoom = (rooms: Room[]): Room | undefined => {
+    return rooms
+        .filter(room => 
+            room.settings.isPublic && 
+            room.players.length < room.settings.maxPlayers &&
+            room.status === 'LOBBY'
+        )
+        .sort((a, b) => b.players.length - a.players.length)[0];
+};
