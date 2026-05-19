@@ -1,7 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import JoinRoom from '../../components/JoinRoom';
-import React from 'react';
 
 describe('JoinRoom component', () => {
     it('should call onJoin with username and empty roomId when room code is empty', () => {
