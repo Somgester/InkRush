@@ -3,16 +3,17 @@ import React, { useState } from 'react';
 interface JoinRoomProps {
     onJoin: (username: string, roomId: string) => void;
     initialRoomId?: string;
+    quickJoinError?: string;
 }
 
-const JoinRoom: React.FC<JoinRoomProps> = ({ onJoin, initialRoomId = '' }) => {
+const JoinRoom: React.FC<JoinRoomProps> = ({ onJoin, initialRoomId = '', quickJoinError }) => {
     const [username, setUsername] = useState('');
     const [roomId, setRoomId] = useState(initialRoomId);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (username.trim() && roomId.trim()) {
-            onJoin(username, roomId);
+        if (username.trim()) {
+            onJoin(username, roomId.trim());
         }
     };
 
@@ -51,8 +52,12 @@ const JoinRoom: React.FC<JoinRoomProps> = ({ onJoin, initialRoomId = '' }) => {
                             onChange={(e) => setRoomId(e.target.value)}
                             className="w-full px-5 py-4 bg-gray-50 border-3 border-gray-100 rounded-xl focus:border-blue-500 focus:ring-0 outline-none transition-all font-bold text-gray-700 placeholder-gray-300"
                             placeholder="SECRET_ROOM"
-                            required
                         />
+                        {quickJoinError && (
+                            <p className="text-red-600 text-[10px] font-black uppercase tracking-widest mt-2 ml-1 animate-pulse bg-red-50 px-3 py-1 rounded-full border border-red-100 inline-block">
+                                {quickJoinError}
+                            </p>
+                        )}
                     </div>
                     
                     <button

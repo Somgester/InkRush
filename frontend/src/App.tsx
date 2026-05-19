@@ -20,6 +20,7 @@ function App() {
     const [messages, setMessages] = useState<Message[]>([]);
     const [timer, setTimer] = useState(0);
     const [copyStatus, setCopyStatus] = useState<'idle' | 'success' | 'error'>('idle');
+    const [quickJoinError, setQuickJoinError] = useState('');
     const previousCorrectGuessRef = useRef(false);
     const copyFeedbackTimeoutRef = useRef<ReturnType<typeof window.setTimeout> | undefined>(undefined);
 
@@ -34,12 +35,21 @@ function App() {
         function onRoomData(data: Room) { setRoomData(data); setTimer(data.timer); }
         function onNewMessage(message: Message) { setMessages((prev) => [...prev, message]); }
         function onTimerUpdate(newTimer: number) { setTimer(newTimer); }
+        function onQuickJoinSuccess({ roomId }: { roomId: string }) {
+            socket.emit('join_room', { username: (window as any).pendingUsername, roomId });
+            setRoomId(roomId);
+        }
+        function onNoRoomsAvailable() {
+            setQuickJoinError("No open rooms right now. Create one and others will join you!");
+        }
 
         socket.on('connect', onConnect);
         socket.on('disconnect', onDisconnect);
         socket.on('room_data', onRoomData);
         socket.on('new_message', onNewMessage);
         socket.on('timer_update', onTimerUpdate);
+        socket.on('quick_join_success', onQuickJoinSuccess);
+        socket.on('no_rooms_available', onNoRoomsAvailable);
 
         return () => {
             socket.off('connect', onConnect);
@@ -47,6 +57,8 @@ function App() {
             socket.off('room_data', onRoomData);
             socket.off('new_message', onNewMessage);
             socket.off('timer_update', onTimerUpdate);
+            socket.off('quick_join_success', onQuickJoinSuccess);
+            socket.off('no_rooms_available', onNoRoomsAvailable);
         };
     }, []);
     const pingServer = () => fetch(`${backendUrl}/health`).catch(() => {});
@@ -66,9 +78,15 @@ function App() {
 
     const handleJoinRoom = (name: string, room: string) => {
         setUsername(name);
+        (window as any).pendingUsername = name;
         setRoomId(room);
         pingServer();
-        socket.emit('join_room', { username: name, roomId: room });
+        if (room) {
+            socket.emit('join_room', { username: name, roomId: room });
+        } else {
+            setQuickJoinError('');
+            socket.emit('quick_join');
+        }
     };
 
     const handleSendMessage = (text: string) => roomId && socket.emit('send_message', { roomId, text });
@@ -140,7 +158,7 @@ function App() {
                         Multiplayer Fun
                     </p>
                 </div>
-                <JoinRoom onJoin={handleJoinRoom} initialRoomId={initialRoomId} />
+                <JoinRoom onJoin={handleJoinRoom} initialRoomId={initialRoomId} quickJoinError={quickJoinError} />
                 <div className="mt-12 flex items-center space-x-3 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full border border-white/50 shadow-sm">
                     <div className={`w-3 h-3 rounded-full ${isConnected ? 'bg-green-400 animate-pulse' : 'bg-red-400'}`} />
                     <span className="text-sm font-black text-white uppercase tracking-widest">

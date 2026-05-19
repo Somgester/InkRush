@@ -8,7 +8,8 @@ describe('LobbySettings Regression Tests', () => {
         maxPlayers: 8,
         totalRounds: 5,
         drawingTime: 60,
-        customWords: ['fun', 'game']
+        customWords: ['fun', 'game'],
+        isPublic: true
     };
     const mockOnUpdate = vi.fn();
 
@@ -19,6 +20,7 @@ describe('LobbySettings Regression Tests', () => {
         expect(screen.getByRole('combobox', { name: /total rounds/i })).toBeDisabled();
         expect(screen.getByRole('combobox', { name: /drawing time/i })).toBeDisabled();
         expect(screen.getByPlaceholderText(/word1, word2, word3/i)).toBeDisabled();
+        expect(screen.getByRole('checkbox')).toBeDisabled();
     });
 
     it('should enable inputs if user is host', () => {
@@ -28,6 +30,7 @@ describe('LobbySettings Regression Tests', () => {
         expect(screen.getByRole('combobox', { name: /total rounds/i })).toBeEnabled();
         expect(screen.getByRole('combobox', { name: /drawing time/i })).toBeEnabled();
         expect(screen.getByPlaceholderText(/word1, word2, word3/i)).toBeEnabled();
+        expect(screen.getByRole('checkbox')).toBeEnabled();
     });
 
     it('should call onUpdate when a setting is changed', () => {
@@ -37,6 +40,15 @@ describe('LobbySettings Regression Tests', () => {
         fireEvent.change(select, { target: { value: '12' } });
         
         expect(mockOnUpdate).toHaveBeenCalledWith({ maxPlayers: 12 });
+    });
+
+    it('should call onUpdate when public room toggle is changed', () => {
+        render(<LobbySettings settings={mockSettings} onUpdate={mockOnUpdate} isHost={true} />);
+        
+        const checkbox = screen.getByRole('checkbox');
+        fireEvent.click(checkbox);
+        
+        expect(mockOnUpdate).toHaveBeenCalledWith({ isPublic: false });
     });
 
     it('should parse custom words correctly', () => {

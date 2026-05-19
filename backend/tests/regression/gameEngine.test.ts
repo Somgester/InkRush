@@ -38,7 +38,8 @@ describe('GameEngine Regression Tests', () => {
                 maxPlayers: 10,
                 totalRounds: 3,
                 drawingTime: 30,
-                customWords: []
+                customWords: [],
+                isPublic: true
             },
             customWordsPool: [],
             defaultWordsPool: []

@@ -21,6 +21,7 @@ export interface RoomSettings {
     totalRounds: number;
     drawingTime: number;
     customWords: string[];
+    isPublic: boolean;
 }
 
 export interface Room {
