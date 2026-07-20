@@ -7,6 +7,16 @@ export interface Player {
     hasGuessedCorrectly: boolean;
 }
 
+export interface User {
+    id: string;
+    name: string;
+    avatarUrl: string | null;
+    totalPoints: number;
+    gamesPlayed: number;
+    gamesWon: number;
+    bestWordsGuessed: number;
+}
+
 export interface Message {
     id: string;
     sender: string;

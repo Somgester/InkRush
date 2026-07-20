@@ -1,0 +1,21 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id               String   @id @default(cuid())
+  googleId         String   @unique
+  name             String
+  avatarUrl        String?
+  gamesPlayed      Int      @default(0)
+  gamesWon         Int      @default(0)
+  totalPoints      Int      @default(0)
+  bestWordsGuessed Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}

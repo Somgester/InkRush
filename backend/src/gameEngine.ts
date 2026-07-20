@@ -3,6 +3,7 @@ import { Room } from './types.js';
 import { getRandomWords, WORDS } from './words.js';
 import { levenshteinDistance } from './utils.js';
 import { config } from './config.js';
+import { prisma } from './db.js';
 
 export class GameEngine {
     private io: Server;
@@ -118,6 +119,13 @@ export class GameEngine {
             const points = Math.max(this.minGuessPoints, this.maxGuessPoints - (guessersCount - 1) * this.pointDeductionPerGuesser);
             player.score += points;
 
+            if (player.dbUserId) {
+                prisma.user.update({
+                    where: { id: player.dbUserId },
+                    data: { bestWordsGuessed: { increment: 1 } }
+                }).catch((e: unknown) => console.error('Failed to update words guessed:', e));
+            }
+
             const artist = room.players.find(p => p.id === room.currentArtistId);
             if (artist) {
                 artist.score += this.artistBonusPoints;
@@ -197,6 +205,7 @@ export class GameEngine {
         room.currentWord = undefined;
         
         this.broadcastRoomData(room);
+        this.saveGameStats(room).catch(e => console.error('Failed to save game stats:', e));
 
         this.startTimer(room, () => {
             room.status = 'LOBBY';
@@ -213,6 +222,29 @@ export class GameEngine {
 
             this.broadcastRoomData(room);
         });
+    }
+
+    private async saveGameStats(room: Room) {
+        if (!room.players || room.players.length === 0) return;
+        const maxScore = Math.max(...room.players.map(p => p.score));
+        
+        for (const player of room.players) {
+            if (player.dbUserId) {
+                const isWinner = player.score === maxScore && maxScore > 0;
+                try {
+                    await prisma.user.update({
+                        where: { id: player.dbUserId },
+                        data: {
+                            gamesPlayed: { increment: 1 },
+                            gamesWon: { increment: isWinner ? 1 : 0 },
+                            totalPoints: { increment: player.score }
+                        }
+                    });
+                } catch (e) {
+                    console.error('Failed to update stats for user:', player.dbUserId, e);
+                }
+            }
+        }
     }
 
     private startTimer(room: Room, callback: () => void) {

@@ -3,7 +3,7 @@ import { findAvailableRoom } from '../../src/utils.js';
 import { Room } from '../../src/types.js';
 
 describe('utils.findAvailableRoom', () => {
-    const createMockRoom = (id: string, playersCount: number, isPublic: boolean, status: any = 'LOBBY'): Room => ({
+    const createMockRoom = (id: string, playersCount: number, isPublic: boolean, status: Room['status'] = 'LOBBY'): Room => ({
         id,
         players: Array(playersCount).fill({}),
         status,

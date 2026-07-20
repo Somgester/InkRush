@@ -10,7 +10,7 @@ interface LobbySettingsProps {
 const LobbySettings: React.FC<LobbySettingsProps> = ({ settings, onUpdate, isHost }) => {
     const [wordsInput, setWordsInput] = React.useState(settings.customWords.join(', '));
 
-    const handleChange = (key: keyof RoomSettings, value: any) => {
+    const handleChange = (key: keyof RoomSettings, value: RoomSettings[keyof RoomSettings]) => {
         if (!isHost) return;
         onUpdate({ [key]: value });
     };

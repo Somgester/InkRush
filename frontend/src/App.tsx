@@ -11,6 +11,8 @@ import type { Message, Room, RoomSettings } from './types';
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL ?? 'http://localhost:5000';
 const socket: Socket = io(backendUrl);
+let pendingUsername = '';
+let pendingUserId: string | undefined = undefined;
 
 function App() {
     const [isConnected, setIsConnected] = useState(socket.connected);
@@ -36,7 +38,7 @@ function App() {
         function onNewMessage(message: Message) { setMessages((prev) => [...prev, message]); }
         function onTimerUpdate(newTimer: number) { setTimer(newTimer); }
         function onQuickJoinSuccess({ roomId }: { roomId: string }) {
-            socket.emit('join_room', { username: (window as any).pendingUsername, roomId });
+            socket.emit('join_room', { username: pendingUsername, roomId, userId: pendingUserId });
             setRoomId(roomId);
         }
         function onNoRoomsAvailable() {
@@ -76,26 +78,27 @@ function App() {
         }
     }, []);
 
-    const handleJoinRoom = (name: string, room: string) => {
+    const handleJoinRoom = (name: string, room: string, userId?: string) => {
         setUsername(name);
-        (window as any).pendingUsername = name;
+        pendingUsername = name;
+        pendingUserId = userId;
         setRoomId(room);
         pingServer();
         if (room) {
-            socket.emit('join_room', { username: name, roomId: room });
+            socket.emit('join_room', { username: name, roomId: room, userId });
         } else {
             setQuickJoinError('');
             socket.emit('quick_join');
         }
     };
 
-    const handleSendMessage = (text: string) => roomId && socket.emit('send_message', { roomId, text });
+    const handleSendMessage = (text: string) => { if (roomId) socket.emit('send_message', { roomId, text }); };
     const handleStartGame = () => {
         pingServer();
-        roomId && socket.emit('start_game', { roomId });
+        if (roomId) socket.emit('start_game', { roomId });
     };
-    const handleWordSelect = (word: string) => roomId && socket.emit('choose_word', { roomId, word });
-    const handleUpdateSettings = (settings: Partial<RoomSettings>) => roomId && socket.emit('update_settings', { roomId, settings });
+    const handleWordSelect = (word: string) => { if (roomId) socket.emit('choose_word', { roomId, word }); };
+    const handleUpdateSettings = (settings: Partial<RoomSettings>) => { if (roomId) socket.emit('update_settings', { roomId, settings }); };
 
     const showCopyFeedback = (status: 'success' | 'error') => {
         setCopyStatus(status);

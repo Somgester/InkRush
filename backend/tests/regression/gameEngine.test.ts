@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { GameEngine } from '../../src/gameEngine.js';
-import { Room, Player } from '../../src/types.js';
+import { Room } from '../../src/types.js';
 import { Server } from 'socket.io';
 
 describe('GameEngine Regression Tests', () => {
-    let ioMock: any;
+    let ioMock: Partial<Server>;
     let rooms: Map<string, Room>;
     let gameEngine: GameEngine;
     let mockRoom: Room;

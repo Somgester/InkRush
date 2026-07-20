@@ -2,10 +2,12 @@ import express, { NextFunction, Request, Response } from 'express';
 import cors from 'cors';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
-import { Room, Player, Message } from './types.js';
+
+import { Room, Player, Message, RoomSettings } from './types.js';
 import { GameEngine } from './gameEngine.js';
 import { config } from './config.js';
 import { findAvailableRoom } from './utils.js';
+import usersRouter from './users.js';
 
 const app = express();
 const port = config.port;
@@ -21,6 +23,7 @@ app.use(cors({
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use('/api/users', usersRouter);
 
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
@@ -45,7 +48,7 @@ app.get('/health', (req: Request, res: Response) => {
 io.on('connection', (socket) => {
     console.log('User connected:', socket.id);
 
-    socket.on('join_room', ({ roomId, username }: { roomId: string; username: string }) => {
+    socket.on('join_room', ({ roomId, username, userId }: { roomId: string; username: string; userId?: string }) => {
         if (!rooms.has(roomId)) {
             rooms.set(roomId, {
                 id: roomId,
@@ -84,6 +87,7 @@ io.on('connection', (socket) => {
 
         const newPlayer: Player = {
             id: socket.id,
+            dbUserId: userId,
             username,
             score: 0,
             isDrawing: false,
@@ -124,7 +128,7 @@ io.on('connection', (socket) => {
         gameEngine.startGame(roomId);
     });
 
-    socket.on('update_settings', ({ roomId, settings }: { roomId: string; settings: any }) => {
+    socket.on('update_settings', ({ roomId, settings }: { roomId: string; settings: Partial<RoomSettings> }) => {
         const room = rooms.get(roomId);
         if (!room || room.hostId !== socket.id || room.status !== 'LOBBY') return;
 

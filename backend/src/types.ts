@@ -1,5 +1,6 @@
 export interface Player {
     id: string;
+    dbUserId?: string;
     username: string;
     score: number;
     isDrawing: boolean;
