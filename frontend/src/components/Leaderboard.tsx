@@ -22,51 +22,63 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ onClose }) => {
     }, []);
 
     return (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-3xl w-full max-w-2xl max-h-[80vh] flex flex-col shadow-2xl overflow-hidden border-4 border-yellow-400">
-                <div className="bg-yellow-400 p-6 flex justify-between items-center text-blue-900 border-b-4 border-yellow-500">
-                    <h2 className="text-3xl font-black uppercase tracking-widest italic transform -rotate-1">Global Leaderboard</h2>
-                    <button onClick={onClose} className="text-white hover:text-blue-900 transition-colors">
-                        <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+        <div className="t-modal-backdrop" onClick={onClose}>
+            <div className="t-modal-container t-modal-large" onClick={e => e.stopPropagation()}>
+                <div className="t-modal-header">
+                    <div className="t-modal-title">Global Leaderboard</div>
+                    <button className="btn btn-ghost btn-icon" onClick={onClose} aria-label="Close">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
                         </svg>
                     </button>
                 </div>
                 
-                <div className="p-6 overflow-y-auto flex-1 bg-gray-50">
+                <div className="t-modal-body" style={{ paddingBottom: 0 }}>
                     {loading ? (
-                        <div className="text-center font-black text-gray-400 py-10 uppercase tracking-widest">Loading...</div>
+                        <div style={{ textAlign: 'center', padding: '32px 0' }} className="caption">Connecting...</div>
                     ) : players.length === 0 ? (
-                        <div className="text-center font-black text-gray-400 py-10 uppercase tracking-widest">No players yet.</div>
+                        <div style={{ textAlign: 'center', padding: '32px 0' }} className="caption">No records found.</div>
                     ) : (
-                        <div className="space-y-4">
-                            {players.map((p, i) => (
-                                <div key={p.id} className="bg-white p-4 rounded-2xl flex items-center gap-4 border-2 border-gray-100 shadow-sm">
-                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center font-black text-lg ${i === 0 ? 'bg-yellow-400 text-yellow-900' : i === 1 ? 'bg-gray-300 text-gray-800' : i === 2 ? 'bg-amber-600 text-orange-100' : 'bg-blue-100 text-blue-600'}`}>
-                                        {i + 1}
-                                    </div>
-                                    {p.avatarUrl ? (
-                                        <img src={p.avatarUrl} alt={p.name} className="w-12 h-12 rounded-full border-2 border-gray-200" />
-                                    ) : (
-                                        <div className="w-12 h-12 rounded-full bg-blue-500 text-white flex items-center justify-center font-black text-xl">
-                                            {p.name.charAt(0).toUpperCase()}
-                                        </div>
-                                    )}
-                                    <div className="flex-1">
-                                        <h3 className="font-black text-lg text-gray-800">{p.name}</h3>
-                                        <div className="flex gap-4 text-xs font-bold text-gray-400 uppercase tracking-wider">
-                                            <span>{p.gamesPlayed} Games</span>
-                                            <span>{p.gamesWon} Wins</span>
-                                        </div>
-                                    </div>
-                                    <div className="text-right">
-                                        <div className="font-black text-2xl text-blue-600">{p.totalPoints}</div>
-                                        <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Points</div>
-                                    </div>
-                                </div>
-                            ))}
+                        <div style={{ maxHeight: '60vh', overflowY: 'auto', margin: '0 -16px' }}>
+                            <table className="t-table">
+                                <thead>
+                                    <tr>
+                                        <th style={{ width: '60px', textAlign: 'center' }}>Rank</th>
+                                        <th>Player</th>
+                                        <th style={{ textAlign: 'right' }}>Games</th>
+                                        <th style={{ textAlign: 'right' }}>Wins</th>
+                                        <th style={{ textAlign: 'right' }}>Total Points</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {players.map((p, i) => (
+                                        <tr key={p.id}>
+                                            <td style={{ textAlign: 'center' }} className="mono">{String(i + 1).padStart(2, '0')}</td>
+                                            <td>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '4px 0' }}>
+                                                    {p.avatarUrl ? (
+                                                        <img src={p.avatarUrl} alt={p.name} style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }} />
+                                                    ) : (
+                                                        <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: '#4285F4', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', fontWeight: 400, fontFamily: 'sans-serif' }}>
+                                                            {p.name.charAt(0).toUpperCase()}
+                                                        </div>
+                                                    )}
+                                                    <span style={{ color: 'var(--t-text-primary)', fontWeight: 500, fontSize: '14px' }}>{p.name}</span>
+                                                </div>
+                                            </td>
+                                            <td style={{ textAlign: 'right' }} className="mono">{p.gamesPlayed}</td>
+                                            <td style={{ textAlign: 'right' }} className="mono">{p.gamesWon}</td>
+                                            <td style={{ textAlign: 'right', color: 'var(--t-text-emphasis)' }} className="mono">{p.totalPoints}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
                         </div>
                     )}
+                </div>
+                <div className="t-modal-footer">
+                    <button className="btn btn-secondary" onClick={onClose}>Close</button>
                 </div>
             </div>
         </div>

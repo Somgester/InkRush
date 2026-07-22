@@ -33,26 +33,33 @@ const Chat: React.FC<ChatProps> = ({ messages, onSendMessage }) => {
     };
 
     return (
-        <div className="flex flex-col h-full min-h-0 bg-white border-3 border-gray-100 rounded-2xl shadow-lg overflow-hidden">
-            <div className="bg-gray-50 px-4 py-3 border-b-3 border-gray-100">
-                <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest">Live Guessing</h3>
+        <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+            <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--t-border)' }}>
+                <h3 className="section-heading">Event Log</h3>
             </div>
             
-            <div className="flex-1 min-h-0 overflow-y-auto p-3 sm:p-4 space-y-3 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px]">
+            <div style={{ flex: 1, overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {messages.map((msg) => (
-                    <div key={msg.id} className={`flex flex-col ${msg.isSystem ? 'items-center' : 'items-start'}`}>
+                    <div key={msg.id} style={{ display: 'flex', flexDirection: 'column' }}>
                         {msg.isSystem ? (
-                            <div className="bg-blue-50 text-blue-600 text-[10px] font-black uppercase px-3 py-1 rounded-full border border-blue-100 shadow-sm">
-                                {msg.text}
+                            <div className="mono" style={{ 
+                                color: msg.text.includes('guessed the word') ? 'var(--t-success)' : 'var(--t-accent)', 
+                                fontSize: '11px', 
+                                textAlign: 'center', 
+                                margin: '4px 0', 
+                                opacity: msg.text.includes('guessed the word') ? 1 : 0.8,
+                                fontWeight: msg.text.includes('guessed the word') ? 700 : 400
+                            }}>
+                                &gt; {msg.text}
                             </div>
                         ) : (
-                            <div className="max-w-[90%]">
-                                <span className="text-xs font-black text-blue-600 mb-1 block ml-1 uppercase tracking-tighter">
+                            <div>
+                                <span style={{ color: 'var(--t-text-muted)', fontSize: '11px', fontWeight: 600, marginRight: '8px' }}>
                                     {msg.sender}
                                 </span>
-                                <div className="bg-gray-100 text-gray-800 px-4 py-2 rounded-2xl rounded-tl-none font-bold text-sm shadow-sm border border-white">
+                                <span style={{ color: 'var(--t-text-primary)' }}>
                                     {msg.text}
-                                </div>
+                                </span>
                             </div>
                         )}
                     </div>
@@ -60,13 +67,14 @@ const Chat: React.FC<ChatProps> = ({ messages, onSendMessage }) => {
                 <div ref={chatEndRef} />
             </div>
             
-            <form onSubmit={handleSubmit} className="p-3 sm:p-4 bg-gray-50 border-t-3 border-gray-100">
+            <form onSubmit={handleSubmit} style={{ padding: '16px', borderTop: '1px solid var(--t-border)' }}>
                 <input
                     type="text"
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
-                    placeholder="Type your guess..."
-                    className="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 font-bold text-gray-700 shadow-inner"
+                    placeholder="Enter command or guess..."
+                    className="t-input mono"
+                    style={{ width: '100%', boxSizing: 'border-box' }}
                 />
             </form>
         </div>

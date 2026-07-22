@@ -68,91 +68,82 @@ const JoinRoom: React.FC<JoinRoomProps> = ({ onJoin, initialRoomId = '', quickJo
     };
 
     return (
-        <div className="relative group flex flex-col items-center">
-            {/* Playful background shadow */}
-            <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200 -z-10 mt-16"></div>
-            
-            <div className="flex gap-4 mb-6">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
                 {!user ? (
-                    <div className="flex items-center">
-                        <GoogleLogin 
-                            onSuccess={handleGoogleSuccess}
-                            onError={() => console.log('Login Failed')}
-                        />
-                    </div>
+                    <GoogleLogin 
+                        onSuccess={handleGoogleSuccess}
+                        onError={() => console.log('Login Failed')}
+                    />
                 ) : (
-                    <div className="bg-white px-6 py-2 rounded-xl shadow-md border-2 border-gray-200 flex items-center gap-4">
-                        <button onClick={() => setShowProfile(true)} className="flex items-center gap-4 hover:opacity-80 transition-opacity">
+                    <div className="t-card" style={{ padding: '8px 16px', display: 'flex', alignItems: 'center', gap: '16px' }}>
+                        <button onClick={() => setShowProfile(true)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '12px', padding: 0 }}>
                             {user.avatarUrl ? (
-                                <img src={user.avatarUrl} alt="Avatar" className="w-8 h-8 rounded-full" />
+                                <img src={user.avatarUrl} alt={user.name} style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover' }} />
                             ) : (
-                                <div className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center font-black">{user.name.charAt(0)}</div>
+                                <div style={{ width: '28px', height: '28px', borderRadius: '50%', backgroundColor: '#4285F4', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 400, fontSize: '16px', fontFamily: 'sans-serif' }}>
+                                    {user.name.charAt(0).toUpperCase()}
+                                </div>
                             )}
-                            <div className="flex flex-col text-left">
-                                <span className="font-black text-gray-800 leading-tight">{user.name}</span>
-                                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-tight">{user.totalPoints} pts</span>
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                                <span style={{ color: 'var(--t-text-primary)', fontSize: '13px', fontWeight: 500 }}>{user.name}</span>
+                                <span className="caption" style={{ color: 'var(--t-text-muted)' }}>{user.totalPoints} pts</span>
                             </div>
                         </button>
-                        <button onClick={handleLogout} className="text-red-500 hover:text-red-700 ml-2 border-l-2 border-gray-100 pl-4">
-                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                        <div style={{ width: '1px', height: '24px', backgroundColor: 'var(--t-border)' }}></div>
+                        <button onClick={handleLogout} className="btn btn-ghost btn-icon" title="Logout" style={{ color: 'var(--t-danger)' }}>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                                <polyline points="16 17 21 12 16 7"></polyline>
+                                <line x1="21" y1="12" x2="9" y2="12"></line>
                             </svg>
                         </button>
                     </div>
                 )}
                 
-                <button onClick={() => setShowLeaderboard(true)} className="bg-yellow-400 hover:bg-yellow-500 text-yellow-900 font-black px-6 py-3 rounded-xl shadow-md border-2 border-yellow-500 transition-all flex items-center gap-2">
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                <button onClick={() => setShowLeaderboard(true)} className="btn btn-secondary">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px' }}>
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                     </svg>
-                    LEADERBOARD
+                    Leaderboard
                 </button>
             </div>
 
-            <div className="relative bg-white p-6 sm:p-8 rounded-2xl shadow-2xl w-[min(100vw-2rem,24rem)] border-4 border-yellow-400">
-                <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-yellow-400 text-white font-black px-6 py-2 rounded-full shadow-lg border-4 border-white transform -rotate-2 whitespace-nowrap">
-                    PLAY NOW!
-                </div>
+            <div className="t-card" style={{ width: '100%', maxWidth: '360px', boxSizing: 'border-box' }}>
+                <h2 className="section-heading" style={{ marginBottom: '24px', textAlign: 'center' }}>Welcome to Inkrush</h2>
                 
-                <h2 className="text-2xl sm:text-3xl font-black mb-8 text-center text-gray-800 tracking-tight mt-6">
-                    Welcome to <span className="text-blue-600">Inkrush</span>
-                </h2>
-                
-                <form onSubmit={handleSubmit} className="space-y-6">
-                    <div>
-                        <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Your Name</label>
+                <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    <div className="t-input-group">
+                        <label className="t-label">Your Name</label>
                         <input
                             type="text"
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
-                            className="w-full px-5 py-4 bg-gray-50 border-3 border-gray-100 rounded-xl focus:border-blue-500 focus:ring-0 outline-none transition-all font-bold text-gray-700 placeholder-gray-300"
+                            className="t-input mono"
                             placeholder="John Doe"
                             maxLength={15}
                             required
                         />
                     </div>
-                    <div>
-                        <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Room Code</label>
+                    <div className="t-input-group">
+                        <label className="t-label">Room Code</label>
                         <input
                             type="text"
                             value={roomId}
                             onChange={(e) => setRoomId(e.target.value)}
-                            className="w-full px-5 py-4 bg-gray-50 border-3 border-gray-100 rounded-xl focus:border-blue-500 focus:ring-0 outline-none transition-all font-bold text-gray-700 placeholder-gray-300"
+                            className={`t-input mono ${quickJoinError ? 'error' : ''}`}
                             placeholder="ROOM_CODE"
                         />
                         {quickJoinError && (
-                            <p className="text-red-600 text-[10px] font-black uppercase tracking-widest mt-2 ml-1 animate-pulse bg-red-50 px-3 py-1 rounded-full border border-red-100 inline-block">
-                                {quickJoinError}
-                            </p>
+                            <div className="t-error-text">{quickJoinError}</div>
                         )}
                     </div>
                     
-                    <button
-                        type="submit"
-                        className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl shadow-lg hover:shadow-blue-500/30 transition-all font-black text-lg sm:text-xl transform active:scale-95 border-b-6 border-blue-800"
-                    >
-                        START DRAWING
-                    </button>
+                    <div style={{ marginTop: '8px' }}>
+                        <button type="submit" className="btn btn-primary" style={{ width: '100%' }}>
+                            START DRAWING
+                        </button>
+                    </div>
                 </form>
             </div>
             

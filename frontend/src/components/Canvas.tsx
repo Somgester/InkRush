@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { Socket } from 'socket.io-client';
+import { Pencil, PaintBucket, Eraser } from 'lucide-react';
 
 interface CanvasProps {
     socket: Socket;
@@ -162,11 +163,9 @@ const Canvas: React.FC<CanvasProps> = ({ socket, roomId, isDrawingEnabled }) => 
         const handleResize = () => {
             const parent = canvas.parentElement;
             if (parent) {
-                // Save current drawing
                 const tempImage = canvas.toDataURL();
                 canvas.width = parent.clientWidth;
                 canvas.height = parent.clientHeight;
-                // Restore drawing
                 const img = new Image();
                 img.src = tempImage;
                 img.onload = () => ctx.drawImage(img, 0, 0);
@@ -186,7 +185,10 @@ const Canvas: React.FC<CanvasProps> = ({ socket, roomId, isDrawingEnabled }) => 
 
         socket.on('clear_canvas', () => {
             const ctx = canvas.getContext('2d');
-            if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if (ctx) {
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
         });
 
         return () => {
@@ -196,6 +198,18 @@ const Canvas: React.FC<CanvasProps> = ({ socket, roomId, isDrawingEnabled }) => 
             socket.off('clear_canvas');
         };
     }, [socket]);
+
+    // Initial white fill
+    useEffect(() => {
+        const canvas = canvasRef.current;
+        if (canvas) {
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
+        }
+    }, []);
 
     const handleMouseDown = (e: React.MouseEvent | React.TouchEvent) => {
         if (!isDrawingEnabled) return;
@@ -247,7 +261,8 @@ const Canvas: React.FC<CanvasProps> = ({ socket, roomId, isDrawingEnabled }) => 
         if (!canvas) return;
         const ctx = canvas.getContext('2d');
         if (!ctx) return;
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
         socket.emit('clear_canvas', { roomId });
     };
 
@@ -264,7 +279,7 @@ const Canvas: React.FC<CanvasProps> = ({ socket, roomId, isDrawingEnabled }) => 
     };
 
     return (
-        <div className="flex flex-col h-full w-full relative overflow-hidden">
+        <div style={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%', position: 'relative' }}>
             <canvas
                 ref={canvasRef}
                 onMouseDown={handleMouseDown}
@@ -275,102 +290,93 @@ const Canvas: React.FC<CanvasProps> = ({ socket, roomId, isDrawingEnabled }) => 
                 onTouchStart={handleMouseDown}
                 onTouchMove={handleMouseMove}
                 onTouchEnd={handleMouseUp}
-                className="flex-1 bg-white touch-none"
-                style={getCursorStyle()}
+                style={{
+                    flex: 1,
+                    touchAction: 'none',
+                    ...getCursorStyle()
+                }}
             />
 
             {isDrawingEnabled && isMouseInCanvas && (
                 <div 
-                    className="fixed pointer-events-none z-50 pointer-events-none"
                     style={{ 
+                        position: 'fixed',
+                        pointerEvents: 'none',
+                        zIndex: 50,
                         left: mousePos.x, 
                         top: mousePos.y,
-                        transform: 'translate(-4px, -28px)' // Adjust hotspot to bottom-left tip of the icon
+                        transform: 'translate(-4px, -28px)' 
                     }}
                 >
                     <img 
                         src={getToolImage()} 
                         alt="cursor" 
-                        className="w-8 h-8 object-contain"
+                        style={{ width: '32px', height: '32px', objectFit: 'contain' }}
                     />
                 </div>
             )}
             
             {isDrawingEnabled && (
-                <div className="absolute bottom-3 sm:bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-1rem)] sm:w-auto max-w-[96%] bg-white p-3 rounded-2xl flex flex-col items-center gap-3 sm:gap-4 shadow-[0_10px_40px_rgba(0,0,0,0.1)] border-3 border-gray-100 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                    <div className="grid grid-cols-5 sm:grid-cols-10 gap-1 px-1 sm:px-2">
+                <div className="t-card" style={{
+                    position: 'absolute',
+                    bottom: '24px',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '16px',
+                    padding: '16px'
+                }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(10, 1fr)', gap: '4px' }}>
                         {COLORS.map((c) => (
                             <button
                                 key={c}
-                                onClick={() => {
-                                    setColor(c);
-                                    setIsErasing(false);
+                                onClick={() => { setColor(c); setIsErasing(false); }}
+                                style={{
+                                    width: '20px', height: '20px', backgroundColor: c, border: 'none', borderRadius: '2px', cursor: 'pointer',
+                                    outline: color === c ? '2px solid var(--t-accent)' : '1px solid var(--t-border)',
+                                    outlineOffset: '2px'
                                 }}
-                                className={`w-4 h-4 sm:w-5 sm:h-5 rounded-sm border ${color === c ? 'ring-2 ring-blue-500 ring-offset-2 scale-110' : 'border-gray-200'} transition-transform`}
-                                style={{ backgroundColor: c }}
                             />
                         ))}
                     </div>
 
-                    <div className="flex items-center gap-2 flex-wrap justify-center">
+                    <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
                         <button
-                            onClick={() => {
-                                setIsErasing(false);
-                                setTool('pencil');
-                                if (isErasing) setColor('#000000');
-                            }}
+                            onClick={() => { setIsErasing(false); setTool('pencil'); if (isErasing) setColor('#000000'); }}
+                            className={`btn ${tool === 'pencil' && !isErasing ? 'btn-primary' : 'btn-secondary'} btn-icon`}
                             title="Brush"
-                            className={`p-2 rounded-xl transition-all border-2 ${tool === 'pencil' && !isErasing ? 'bg-blue-600 text-white border-blue-700 shadow-md' : 'bg-white text-gray-500 border-gray-100 hover:border-blue-200'}`}
                         >
-                            <img src={`${import.meta.env.BASE_URL}icons/pencil_icon.png`} alt="Pencil" className="w-6 h-6 object-contain" />
+                            <Pencil size={16} />
                         </button>
                         <button
-                            onClick={() => {
-                                setIsErasing(false);
-                                setTool('bucket');
-                                if (isErasing) setColor('#000000');
-                            }}
+                            onClick={() => { setIsErasing(false); setTool('bucket'); if (isErasing) setColor('#000000'); }}
+                            className={`btn ${tool === 'bucket' ? 'btn-primary' : 'btn-secondary'} btn-icon`}
                             title="Fill Bucket"
-                            className={`p-2 rounded-xl transition-all border-2 ${tool === 'bucket' ? 'bg-blue-600 text-white border-blue-700 shadow-md' : 'bg-white text-gray-500 border-gray-100 hover:border-blue-200'}`}
                         >
-                            <img src={`${import.meta.env.BASE_URL}icons/color_bucket_icon.png`} alt="Bucket" className="w-6 h-6 object-contain" />
+                            <PaintBucket size={16} />
                         </button>
                         <button
-                            onClick={() => {
-                                setIsErasing(true);
-                                setTool('pencil');
-                                setColor('#ffffff');
-                            }}
+                            onClick={() => { setIsErasing(true); setTool('pencil'); setColor('#ffffff'); }}
+                            className={`btn ${isErasing ? 'btn-primary' : 'btn-secondary'} btn-icon`}
                             title="Eraser"
-                            className={`p-2 rounded-xl transition-all border-2 ${isErasing ? 'bg-blue-600 text-white border-blue-700 shadow-md' : 'bg-white text-gray-500 border-gray-100 hover:border-blue-200'}`}
                         >
-                            <img src={`${import.meta.env.BASE_URL}icons/eraser_icon.png`} alt="Eraser" className="w-6 h-6 object-contain" />
+                            <Eraser size={16} />
                         </button>
                     </div>
                     
-                    <div className="flex items-center gap-3 sm:gap-6 w-full px-1 sm:px-4 border-t-2 border-gray-50 pt-3">
-                        <div className="flex items-center space-x-3 flex-1">
-                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Size</span>
-                            <input
-                                type="range"
-                                min="1"
-                                max="30"
-                                value={width}
-                                onChange={(e) => setWidth(parseInt(e.target.value))}
-                                className="flex-1 h-2 bg-gray-100 rounded-lg appearance-none cursor-pointer accent-blue-600"
-                            />
-                        </div>
-                        
-                        <div className="h-6 w-px bg-gray-100" />
-                        
-                        <button
-                            onClick={clearCanvas}
-                            className="flex items-center space-x-2 text-gray-400 hover:text-red-500 transition-colors group shrink-0"
-                        >
-                            <span className="text-[10px] font-black uppercase tracking-widest">Reset</span>
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 group-active:rotate-90 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px', borderTop: '1px solid var(--t-border)', paddingTop: '16px' }}>
+                        <span className="caption">Size</span>
+                        <input
+                            type="range"
+                            min="1"
+                            max="30"
+                            value={width}
+                            onChange={(e) => setWidth(parseInt(e.target.value))}
+                            style={{ flex: 1, height: '4px', cursor: 'pointer', backgroundColor: 'var(--t-bg-inset)', borderRadius: '2px' }}
+                        />
+                        <button onClick={clearCanvas} className="btn btn-ghost" style={{ padding: '0 8px' }}>
+                            <span className="caption">Reset</span>
                         </button>
                     </div>
                 </div>
