@@ -1,5 +1,5 @@
 import { Server } from 'socket.io';
-import { Room } from './types.js';
+import { ClientRoom, Room } from './types.js';
 import { getRandomWords, WORDS } from './words.js';
 import { levenshteinDistance } from './utils.js';
 import { config } from './config.js';
@@ -271,7 +271,30 @@ export class GameEngine {
         }
     }
 
-    private broadcastRoomData(room: Room) {
-        this.io.to(room.id).emit('room_data', room);
+    /**
+     * The room as one particular player is allowed to see it.
+     *
+     * While a word is live the answer never leaves the server for anyone but the
+     * artist — guessers get `maskedWord` instead, and the three candidate words
+     * are withheld too. At ROUND_END the word is revealed to everybody so the
+     * "The word was: …" banner can render.
+     */
+    public roomStateFor(room: Room, playerId?: string): ClientRoom {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { customWordsPool, defaultWordsPool, ...visible } = room;
+        const wordIsSecret = room.status === 'WORD_SELECTION' || room.status === 'DRAWING';
+        const maskedWord = room.currentWord?.replace(/[a-zA-Z]/g, '_');
+
+        if (!wordIsSecret || playerId === room.currentArtistId) {
+            return { ...visible, maskedWord };
+        }
+
+        return { ...visible, maskedWord, currentWord: undefined, wordChoices: [] };
+    }
+
+    public broadcastRoomData(room: Room) {
+        room.players.forEach(player => {
+            this.io.to(player.id).emit('room_data', this.roomStateFor(room, player.id));
+        });
     }
 }

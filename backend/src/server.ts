@@ -100,7 +100,7 @@ io.on('connection', (socket) => {
             room.hostId = newPlayer.id;
         }
         
-        io.to(roomId).emit('room_data', room);
+        gameEngine.broadcastRoomData(room);
         
         const systemMessage: Message = {
             id: createMessageId(),
@@ -134,7 +134,7 @@ io.on('connection', (socket) => {
 
         room.settings = { ...room.settings, ...settings };
         room.totalRounds = room.settings.totalRounds; // Sync for consistency
-        io.to(roomId).emit('room_data', room);
+        gameEngine.broadcastRoomData(room);
     });
 
     socket.on('choose_word', ({ roomId, word }: { roomId: string; word: string }) => {
@@ -213,7 +213,7 @@ io.on('connection', (socket) => {
                 if (room.players.length === 0) {
                     rooms.delete(roomId);
                 } else {
-                    io.to(roomId).emit('room_data', room);
+                    gameEngine.broadcastRoomData(room);
                     const systemMessage: Message = {
                         id: createMessageId(),
                         sender: systemMessageSender,

@@ -33,7 +33,10 @@ export interface Room {
     currentRound: number;
     totalRounds: number;
     currentArtistId?: string;
+    /** Only ever sent to the artist while a word is live. See GameEngine.roomStateFor. */
     currentWord?: string;
+    /** Underscored form of currentWord, safe to send to guessers. */
+    maskedWord?: string;
     timer: number;
     wordChoices: string[];
     drawnPlayerIds: string[];
@@ -41,3 +44,10 @@ export interface Room {
     customWordsPool: string[];
     defaultWordsPool: string[];
 }
+
+/**
+ * A Room as it goes over the wire. The word pools are server-only bookkeeping —
+ * defaultWordsPool holds the entire remaining deck in draw order, so shipping it
+ * would hand every player the upcoming words.
+ */
+export type ClientRoom = Omit<Room, 'customWordsPool' | 'defaultWordsPool'>;

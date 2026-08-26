@@ -199,7 +199,7 @@ function App() {
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: 'var(--t-accent-bg)', padding: '4px 12px', borderRadius: '4px', border: '1px solid var(--t-accent-hover)' }}>
                                 <span className="caption" style={{ color: 'var(--t-accent)' }}>{isArtist ? 'DRAW:' : 'GUESS:'}</span>
                                 <span className="mono" style={{ fontSize: '14px', color: 'var(--t-text-emphasis)', letterSpacing: isArtist ? '0' : '0.2em' }}>
-                                    {isArtist ? roomData.currentWord : roomData.currentWord?.replace(/[a-zA-Z]/g, '_')}
+                                    {isArtist ? roomData.currentWord : roomData.maskedWord}
                                 </span>
                             </div>
                         )}
