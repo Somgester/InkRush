@@ -36,7 +36,7 @@ The neatest idea in the codebase is how little goes on the wire. A stroke is sen
 | Word deck | **203 words**, 5 of them multi-word, plus per-room custom packs | `words.ts` |
 | Socket protocol | **10 inbound**, **8 outbound** events | `server.ts` + `gameEngine.ts` |
 | Tunable rules | **16 env knobs** (all defaulted) + 5 per-room settings | `config.ts`, `LobbySettings.tsx` |
-| Engine tests | **12 Vitest tests** across 2 files, passing in 2.15 s | `npm test` in `backend/` |
+| Test suites | **30 Vitest tests** across 6 files, all passing | `npm test` in each folder |
 | Client bundle | **273.34 kB** JS (**83.56 kB** gzipped) + 14.74 kB CSS | `vite build`, 1,844 modules |
 | Production build | **1.18 s** for the Vite pass, 16 s including `tsc -b` | timed clean build |
 | Recorded match | 3 players × 2 rounds = **6 turns**, final 1400 / 1360 / 1320 | the session in the GIF |
@@ -47,7 +47,7 @@ The neatest idea in the codebase is how little goes on the wire. A stroke is sen
 - **A real state machine, not a pile of booleans.** `GameStatus` is a five-value union and `GameEngine` is the only thing allowed to move between them, each transition owning a `setInterval` that is always cleared before the next one starts.
 - **Three numbers repaint a region.** A scanline flood fill with an explicit stack (no recursion, `willReadFrequently` on the context) runs identically on every client from a single `draw_fill` event.
 - **Word pools that don't repeat themselves.** Each game shuffles the whole deck once and drains it three at a time instead of re-rolling per turn, so a word can't come up twice in a game. Host-supplied custom words drain first, and the two the artist *didn't* pick go back into the pool for later turns.
-- **Near-miss detection that doesn't leak the answer.** A hand-written Levenshtein distance flags guesses exactly one edit from the word. The *"'hause' is very close!"* nudge goes only to the socket that typed it; the guess itself appears in the log like any other message.
+- **The answer never leaves the server.** Room payloads are built per recipient: while a word is live, `currentWord`, the three candidates and the word pools are stripped for everyone but the artist, and guessers get a `maskedWord` instead. A hand-written Levenshtein distance flags guesses one edit away, and that *"'hause' is very close!"* nudge goes only to the socket that typed it.
 - **Decay scoring.** The first correct guesser takes the full award, each later guesser takes less down to a floor, and the artist banks a bonus per solver — so drawing well pays and guessing fast pays more. The turn ends the moment the room has solved it rather than waiting out the clock.
 - **Fair rotation.** `drawnPlayerIds` guarantees every player draws before the round counter moves, which is why a 3-player, 2-round game is six turns rather than two.
 - **A drawing surface that feels like a tool.** Twenty-colour palette, brush sizes 1–30, pencil / fill bucket / eraser, and a ghost cursor — the native pointer is hidden and the active tool's icon tracks the mouse instead.
@@ -169,7 +169,7 @@ InkRush/
 │  │  ├─ utils.ts              Levenshtein distance · Quick Join room picker
 │  │  ├─ config.ts             16 env-tunable rules, all defaulted
 │  │  └─ types.ts              Room · RoomSettings · Player · Message · GameStatus
-│  └─ tests/regression/        12 Vitest tests over the engine and utils
+│  └─ tests/regression/        19 Vitest tests: engine, utils, payload visibility
 ├─ frontend/src/
 │  ├─ index.css                design tokens: raw palette → semantic mapping
 │  ├─ App.tsx                  socket listeners, layout, invite links, keep-alive
@@ -183,7 +183,7 @@ InkRush/
 │  │  ├─ Leaderboard.tsx       global top ten
 │  │  ├─ Profile.tsx           per-player career stats
 │  │  └─ JoinRoom.tsx          name, room code, Google sign-in
-│  └─ tests/regression/        component regression suites
+│  └─ tests/regression/        11 component regression tests
 └─ assets/                     banner, gameplay GIF, screenshots
 ```
 
@@ -243,6 +243,6 @@ The payoff is the `[data-mode="light"]` block, which redefines the raw palette a
 
 ## Where it goes next
 
-Masking the word server-side rather than blanking it in the client, rejoining a room after a refresh, undo on the canvas, and wiring the light palette to a visible theme toggle are the obvious next moves.
+Rejoining a room after a refresh, undo on the canvas, and wiring the light palette to a visible theme toggle are the obvious next moves.
 
 InkRush is a small codebase that takes the hard part of multiplayer seriously: one authority, one state machine, one wire format, and a client that never has to guess what is true.
