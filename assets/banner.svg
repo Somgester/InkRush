@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="200" viewBox="0 0 880 200" role="img" aria-label="InkRush — real-time multiplayer drawing and guessing">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0d1117"/>
+      <stop offset="55%" stop-color="#12171f"/>
+      <stop offset="100%" stop-color="#161b22"/>
+    </linearGradient>
+    <linearGradient id="rule" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#fbbf24"/>
+      <stop offset="40%" stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#3b82f6" stop-opacity="0"/>
+    </linearGradient>
+    <pattern id="dots" width="16" height="16" patternUnits="userSpaceOnUse">
+      <circle cx="1.4" cy="1.4" r="1.1" fill="#ffffff" opacity="0.045"/>
+    </pattern>
+    <clipPath id="frame">
+      <rect x="0" y="0" width="880" height="200" rx="14"/>
+    </clipPath>
+  </defs>
+
+  <g clip-path="url(#frame)">
+    <rect width="880" height="200" fill="url(#bg)"/>
+    <rect width="880" height="200" fill="url(#dots)"/>
+
+    <!-- motif: the doodle from the recorded match, in the app's own palette -->
+    <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M676 94 L 724 168 L 772 94" stroke="#b97a57" stroke-width="7"/>
+      <path d="M690 108 L 748 108" stroke="#b97a57" stroke-width="4" opacity="0.7"/>
+      <circle cx="700" cy="72" r="25" stroke="#ffaec9" stroke-width="7"/>
+      <circle cx="748" cy="72" r="25" stroke="#fff200" stroke-width="7"/>
+      <circle cx="724" cy="42" r="25" stroke="#b5e61d" stroke-width="7"/>
+      <path d="M818 44 q 28 24 8 54 q -18 28 12 44" stroke="#00a2e8" stroke-width="5" opacity="0.5"/>
+    </g>
+    <g opacity="0.95">
+      <path d="M800 128 l 4 34 l 9 -10 l 8 14 l 7 -4 l -8 -14 l 13 -2 z" fill="#e6edf3"/>
+    </g>
+
+    <!-- wordmark -->
+    <g transform="translate(46 72) rotate(-2)">
+      <text x="3" y="5" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="50" font-weight="900" font-style="italic" letter-spacing="-1.5" fill="#1d4ed8">INKRUSH</text>
+      <text x="0" y="0" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="50" font-weight="900" font-style="italic" letter-spacing="-1.5" fill="#ffffff">INKRUSH</text>
+    </g>
+    <rect x="46" y="96" width="320" height="3" rx="1.5" fill="url(#rule)"/>
+
+    <text x="47" y="126" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="13.5" fill="#8b949e">
+      Real-time multiplayer draw &amp; guess<tspan fill="#484f58"> · </tspan>authoritative Socket.IO game server<tspan fill="#484f58"> · </tspan>203-word deck
+    </text>
+
+    <text x="47" y="160" font-family="Consolas, 'Cascadia Mono', 'DejaVu Sans Mono', monospace" font-size="12.5" letter-spacing="0.2">
+      <tspan fill="#6e7681">LOBBY</tspan><tspan fill="#484f58"> → </tspan><tspan fill="#e3b341">WORD_SELECTION</tspan><tspan fill="#484f58"> → </tspan><tspan fill="#58a6ff">DRAWING</tspan><tspan fill="#484f58"> → </tspan><tspan fill="#3fb950">ROUND_END</tspan><tspan fill="#484f58"> → </tspan><tspan fill="#bc8cff">GAME_OVER</tspan>
+    </text>
+    <text x="47" y="180" font-family="Consolas, 'Cascadia Mono', 'DejaVu Sans Mono', monospace" font-size="11.5" fill="#484f58">
+      one server-owned room object<tspan fill="#30363d"> // </tspan>turns, timers and scoring decided server-side
+    </text>
+
+    <rect x="0.5" y="0.5" width="879" height="199" rx="14" fill="none" stroke="#30363d"/>
+  </g>
+</svg>
