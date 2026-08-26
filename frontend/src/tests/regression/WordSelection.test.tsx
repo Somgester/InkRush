@@ -23,8 +23,9 @@ describe('WordSelection Regression Tests', () => {
         expect(mockOnSelect).toHaveBeenCalledWith('Apple');
     });
 
-    it('should show the "YOUR TURN!" header', () => {
+    it('should show the artist prompt', () => {
         render(<WordSelection words={mockWords} onSelect={mockOnSelect} />);
-        expect(screen.getByText('YOUR TURN!')).toBeInTheDocument();
+        expect(screen.getByText('Select Target')).toBeInTheDocument();
+        expect(screen.getByText('Choose an item to draw.')).toBeInTheDocument();
     });
 });
