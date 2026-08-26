@@ -37,7 +37,7 @@ The neatest idea in the codebase is how little goes on the wire. A stroke is sen
 | Socket protocol | **10 inbound**, **8 outbound** events | `server.ts` + `gameEngine.ts` |
 | Tunable rules | **16 env knobs** (all defaulted) + 5 per-room settings | `config.ts`, `LobbySettings.tsx` |
 | Test suites | **30 Vitest tests** across 6 files, all passing | `npm test` in each folder |
-| Client bundle | **273.34 kB** JS (**83.56 kB** gzipped) + 14.74 kB CSS | `vite build`, 1,844 modules |
+| Client bundle | **273.52 kB** JS (**83.61 kB** gzipped) + 14.74 kB CSS | `vite build`, 1,844 modules |
 | Production build | **1.18 s** for the Vite pass, 16 s including `tsc -b` | timed clean build |
 | Recorded match | 3 players × 2 rounds = **6 turns**, final 1400 / 1360 / 1320 | the session in the GIF |
 
@@ -78,7 +78,7 @@ flowchart LR
     IO -.->|broadcast| G2
 ```
 
-`draw_move` and `draw_fill` are relayed straight to the other sockets in the room so ink stays smooth, while everything that affects the outcome — who draws, what the clock says, who scored — round-trips through `GameEngine` and comes back as a single `room_data` broadcast. Live game state lives only in memory; Postgres holds nothing but long-term player profiles, and the game is fully playable without it.
+`draw_move` and `draw_fill` are relayed straight to the other sockets in the room so ink stays smooth, while everything that affects the outcome — who draws, what the clock says, who scored — round-trips through `GameEngine` and comes back as one `room_data` update per player, tailored so the artist sees the word and nobody else does. Live game state lives only in memory; Postgres holds nothing but long-term player profiles, and the game is fully playable without it.
 
 ```mermaid
 stateDiagram-v2
