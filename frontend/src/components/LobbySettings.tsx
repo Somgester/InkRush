@@ -38,8 +38,9 @@ const LobbySettings: React.FC<LobbySettingsProps> = ({ settings, onUpdate, isHos
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                 <div className="t-input-group">
-                    <label className="t-label">Max Players</label>
+                    <label className="t-label" htmlFor="lobby-max-players">Max Players</label>
                     <select
+                        id="lobby-max-players"
                         disabled={!isHost}
                         value={settings.maxPlayers}
                         onChange={(e) => handleChange('maxPlayers', parseInt(e.target.value))}
@@ -50,8 +51,9 @@ const LobbySettings: React.FC<LobbySettingsProps> = ({ settings, onUpdate, isHos
                 </div>
 
                 <div className="t-input-group">
-                    <label className="t-label">Total Rounds</label>
+                    <label className="t-label" htmlFor="lobby-total-rounds">Total Rounds</label>
                     <select
+                        id="lobby-total-rounds"
                         disabled={!isHost}
                         value={settings.totalRounds}
                         onChange={(e) => handleChange('totalRounds', parseInt(e.target.value))}
@@ -62,8 +64,9 @@ const LobbySettings: React.FC<LobbySettingsProps> = ({ settings, onUpdate, isHos
                 </div>
 
                 <div className="t-input-group">
-                    <label className="t-label">Drawing Time (s)</label>
+                    <label className="t-label" htmlFor="lobby-drawing-time">Drawing Time (s)</label>
                     <select
+                        id="lobby-drawing-time"
                         disabled={!isHost}
                         value={settings.drawingTime}
                         onChange={(e) => handleChange('drawingTime', parseInt(e.target.value))}
@@ -88,8 +91,9 @@ const LobbySettings: React.FC<LobbySettingsProps> = ({ settings, onUpdate, isHos
             </div>
 
             <div className="t-input-group" style={{ marginTop: '16px' }}>
-                <label className="t-label">Custom Words (comma separated)</label>
+                <label className="t-label" htmlFor="lobby-custom-words">Custom Words (comma separated)</label>
                 <textarea
+                    id="lobby-custom-words"
                     disabled={!isHost}
                     value={wordsInput}
                     onChange={handleWordsChange}
