@@ -22,6 +22,13 @@ export const levenshteinDistance = (s: string, t: string): number => {
 
 import { Room } from './types.js';
 
+// Date.now() alone collides whenever two messages leave in the same millisecond
+// (a correct guess emits the player's line and the system line back to back),
+// which gives React duplicate keys in the event log.
+let messageCounter = 0;
+export const createMessageId = (): string =>
+    `${Date.now().toString(36)}-${(messageCounter++).toString(36)}`;
+
 export const findAvailableRoom = (rooms: Room[]): Room | undefined => {
     return rooms
         .filter(room => 

@@ -6,7 +6,7 @@ import { Server } from 'socket.io';
 import { Room, Player, Message, RoomSettings } from './types.js';
 import { GameEngine } from './gameEngine.js';
 import { config } from './config.js';
-import { findAvailableRoom } from './utils.js';
+import { createMessageId, findAvailableRoom } from './utils.js';
 import usersRouter from './users.js';
 
 const app = express();
@@ -75,7 +75,7 @@ io.on('connection', (socket) => {
         const room = rooms.get(roomId)!;
         if (room.players.length >= room.settings.maxPlayers) {
             socket.emit('new_message', {
-                id: Date.now().toString(),
+                id: createMessageId(),
                 sender: systemMessageSender,
                 text: `Room is full. Maximum ${room.settings.maxPlayers} players allowed.`,
                 isSystem: true
@@ -103,7 +103,7 @@ io.on('connection', (socket) => {
         io.to(roomId).emit('room_data', room);
         
         const systemMessage: Message = {
-            id: Date.now().toString(),
+            id: createMessageId(),
             sender: systemMessageSender,
             text: `${username} joined the room!`,
             isSystem: true
@@ -152,7 +152,7 @@ io.on('connection', (socket) => {
 
         if (guessStatus === 'CORRECT') {
             const systemMessage: Message = {
-                id: Date.now().toString(),
+                id: createMessageId(),
                 sender: systemMessageSender,
                 text: `${player.username} guessed the word!`,
                 isSystem: true
@@ -160,7 +160,7 @@ io.on('connection', (socket) => {
             io.to(roomId).emit('new_message', systemMessage);
         } else if (guessStatus === 'CLOSE') {
             const systemMessage: Message = {
-                id: Date.now().toString(),
+                id: createMessageId(),
                 sender: systemMessageSender,
                 text: `'${text}' is very close!`,
                 isSystem: true
@@ -168,14 +168,14 @@ io.on('connection', (socket) => {
             socket.emit('new_message', systemMessage);
             
             const message: Message = {
-                id: Date.now().toString(),
+                id: createMessageId(),
                 sender: player.username,
                 text
             };
             io.to(roomId).emit('new_message', message);
         } else {
             const message: Message = {
-                id: Date.now().toString(),
+                id: createMessageId(),
                 sender: player.username,
                 text
             };
@@ -215,7 +215,7 @@ io.on('connection', (socket) => {
                 } else {
                     io.to(roomId).emit('room_data', room);
                     const systemMessage: Message = {
-                        id: Date.now().toString(),
+                        id: createMessageId(),
                         sender: systemMessageSender,
                         text: `${player.username} left the room.`,
                         isSystem: true
