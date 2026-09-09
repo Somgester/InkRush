@@ -246,3 +246,7 @@ The payoff is the `[data-mode="light"]` block, which redefines the raw palette a
 Rejoining a room after a refresh, undo on the canvas, and wiring the light palette to a visible theme toggle are the obvious next moves.
 
 InkRush is a small codebase that takes the hard part of multiplayer seriously: one authority, one state machine, one wire format, and a client that never has to guess what is true.
+
+**Developed by:** @Somgester
+**Documented by:** @Baranwal-47
+
