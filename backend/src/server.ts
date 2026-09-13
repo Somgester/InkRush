@@ -148,6 +148,16 @@ io.on('connection', (socket) => {
         const player = room.players.find(p => p.id === socket.id);
         if (!player) return;
 
+        if (gameEngine.isArtistRevealingWord(roomId, socket.id, text)) {
+            socket.emit('new_message', {
+                id: createMessageId(),
+                sender: systemMessageSender,
+                text: `Artists can't send the secret word in chat.`,
+                isSystem: true
+            } satisfies Message);
+            return;
+        }
+
         const guessStatus = gameEngine.handleGuess(roomId, socket.id, text);
 
         if (guessStatus === 'CORRECT') {

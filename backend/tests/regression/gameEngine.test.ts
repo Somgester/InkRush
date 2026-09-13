@@ -139,6 +139,22 @@ describe('GameEngine Regression Tests', () => {
         expect(mockRoom.status).toBe('GAME_OVER');
     });
 
+    it('should flag when the artist types the secret word (anti-cheat)', () => {
+        gameEngine.startGame('room1');
+        const artistId = mockRoom.currentArtistId!;
+        const guesserId = mockRoom.players.find(p => p.id !== artistId)!.id;
+
+        gameEngine.chooseWord('room1', mockRoom.wordChoices[0]!);
+        const secret = mockRoom.currentWord!;
+
+        expect(gameEngine.isArtistRevealingWord('room1', artistId, secret)).toBe(true);
+        expect(gameEngine.isArtistRevealingWord('room1', artistId, `the word is ${secret}`)).toBe(true);
+        expect(gameEngine.isArtistRevealingWord('room1', artistId, secret.toUpperCase())).toBe(true);
+        expect(gameEngine.isArtistRevealingWord('room1', artistId, 'draw the roof now')).toBe(false);
+        // Guessers must still be able to type the word to score.
+        expect(gameEngine.isArtistRevealingWord('room1', guesserId, secret)).toBe(false);
+    });
+
     it('should handle player disconnect and end round if artist leaves', () => {
         gameEngine.startGame('room1');
         const artistId = mockRoom.currentArtistId!;

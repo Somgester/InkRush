@@ -197,9 +197,9 @@ function App() {
                     <div style={{ display: 'flex', alignItems: 'center' }}>
                         {roomData.status === 'DRAWING' && (
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: 'var(--t-accent-bg)', padding: '4px 12px', borderRadius: '4px', border: '1px solid var(--t-accent-hover)' }}>
-                                <span className="caption" style={{ color: 'var(--t-accent)' }}>{isArtist ? 'DRAW:' : 'GUESS:'}</span>
-                                <span className="mono" style={{ fontSize: '14px', color: 'var(--t-text-emphasis)', letterSpacing: isArtist ? '0' : '0.2em' }}>
-                                    {isArtist ? roomData.currentWord : roomData.maskedWord}
+                                <span className="caption" style={{ color: 'var(--t-accent)' }}>{isArtist ? 'DRAW:' : currentPlayer?.hasGuessedCorrectly ? 'SOLVED:' : 'GUESS:'}</span>
+                                <span className="mono" style={{ fontSize: '14px', color: 'var(--t-text-emphasis)', letterSpacing: (isArtist || currentPlayer?.hasGuessedCorrectly) ? '0' : '0.2em' }}>
+                                    {(isArtist || currentPlayer?.hasGuessedCorrectly) ? (roomData.currentWord ?? roomData.maskedWord) : roomData.maskedWord}
                                 </span>
                             </div>
                         )}
@@ -255,6 +255,12 @@ function App() {
 
                         <div style={{ flex: 1, position: 'relative' }}>
                             <Canvas socket={socket} roomId={roomData.id} isDrawingEnabled={isDrawingEnabled} />
+                            {roomData.status === 'ROUND_END' && roomData.currentWord && (
+                                <div className="t-word-reveal">
+                                    <span className="caption t-word-reveal-label">The word was</span>
+                                    <span className="mono t-word-reveal-word">{roomData.currentWord}</span>
+                                </div>
+                            )}
                         </div>
                     </div>
                     <div style={{ width: '320px', borderLeft: '1px solid var(--t-border)', display: 'flex', flexDirection: 'column', backgroundColor: 'var(--t-bg-surface)' }}>
