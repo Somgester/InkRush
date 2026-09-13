@@ -42,7 +42,7 @@ export interface Room {
     currentRound: number;
     totalRounds: number;
     currentArtistId?: string;
-    /** Present only for the artist while a word is live; revealed to all at ROUND_END. */
+    /** Present for the artist while a word is live, for a solver once they guess it; revealed to all at ROUND_END. */
     currentWord?: string;
     /** Underscored form of the word, sent to guessers in place of currentWord. */
     maskedWord?: string;

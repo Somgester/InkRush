@@ -42,13 +42,17 @@ const Chat: React.FC<ChatProps> = ({ messages, onSendMessage }) => {
                 {messages.map((msg) => (
                     <div key={msg.id} style={{ display: 'flex', flexDirection: 'column' }}>
                         {msg.isSystem ? (
-                            <div className="mono" style={{ 
-                                color: msg.text.includes('guessed the word') ? 'var(--t-success)' : 'var(--t-accent)', 
-                                fontSize: '11px', 
-                                textAlign: 'center', 
-                                margin: '4px 0', 
-                                opacity: msg.text.includes('guessed the word') ? 1 : 0.8,
-                                fontWeight: msg.text.includes('guessed the word') ? 700 : 400
+                            <div className="mono" style={{
+                                color: msg.text.includes('guessed the word')
+                                    ? 'var(--t-success)'
+                                    : msg.text.includes("can't send the secret word")
+                                        ? 'var(--t-danger)'
+                                        : 'var(--t-accent)',
+                                fontSize: '11px',
+                                textAlign: 'center',
+                                margin: '4px 0',
+                                opacity: (msg.text.includes('guessed the word') || msg.text.includes("can't send the secret word")) ? 1 : 0.8,
+                                fontWeight: (msg.text.includes('guessed the word') || msg.text.includes("can't send the secret word")) ? 700 : 400
                             }}>
                                 &gt; {msg.text}
                             </div>

@@ -33,7 +33,7 @@ export interface Room {
     currentRound: number;
     totalRounds: number;
     currentArtistId?: string;
-    /** Only ever sent to the artist while a word is live. See GameEngine.roomStateFor. */
+    /** Sent to the artist while a word is live, to a solver once they guess it, and to all at ROUND_END. */
     currentWord?: string;
     /** Underscored form of currentWord, safe to send to guessers. */
     maskedWord?: string;

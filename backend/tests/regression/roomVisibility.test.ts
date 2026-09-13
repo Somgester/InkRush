@@ -97,6 +97,20 @@ describe('Room payload visibility', () => {
         }
     });
 
+    it('reveals the word to a solver while the round continues', () => {
+        gameEngine.startGame('room1');
+        gameEngine.chooseWord('room1', 'elephant');
+
+        const [solverId, otherId] = guessers();
+        gameEngine.handleGuess('room1', solverId!, 'elephant');
+
+        // Only one of two guessers solved, so the round is still live.
+        expect(mockRoom.status).toBe('DRAWING');
+        expect(latestFor(solverId!).currentWord).toBe('elephant');
+        expect(latestFor(otherId!).currentWord).toBeUndefined();
+        expect(latestFor(otherId!).maskedWord).toBe('________');
+    });
+
     it('reveals the word to everyone once the round ends', () => {
         gameEngine.startGame('room1');
         gameEngine.chooseWord('room1', 'elephant');

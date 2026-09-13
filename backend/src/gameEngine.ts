@@ -147,6 +147,27 @@ export class GameEngine {
         return 'WRONG';
     }
 
+    /**
+     * Anti-cheat: the artist must not be able to reveal the live word through
+     * chat. Matches case-insensitively on inclusion (not just exact equality)
+     * so "the word is house" is blocked too. Deliberately substring-based:
+     * a false positive only costs the artist one blocked message + warning,
+     * while a false negative ruins the round for every guesser.
+     * Only the artist is restricted — guessers must still be able to type
+     * the word to score.
+     */
+    public isArtistRevealingWord(roomId: string, playerId: string, text: string): boolean {
+        const room = this.rooms.get(roomId);
+        if (!room || room.status !== 'DRAWING' || !room.currentWord) return false;
+        if (playerId !== room.currentArtistId) return false;
+
+        const message = text.trim().toLowerCase();
+        const answer = room.currentWord.trim().toLowerCase();
+        if (!message || !answer) return false;
+
+        return message.includes(answer);
+    }
+
     public handlePlayerDisconnect(roomId: string, playerId: string) {
         const room = this.rooms.get(roomId);
         if (!room) return;
@@ -274,10 +295,12 @@ export class GameEngine {
     /**
      * The room as one particular player is allowed to see it.
      *
-     * While a word is live the answer never leaves the server for anyone but the
-     * artist — guessers get `maskedWord` instead, and the three candidate words
-     * are withheld too. At ROUND_END the word is revealed to everybody so the
-     * "The word was: …" banner can render.
+     * While a word is live the answer never leaves the server except for the
+     * artist and for guessers who already solved it — they proved they know
+     * the word, so sending it back reveals nothing new. Unsolved guessers get
+     * `maskedWord` instead, and the three candidate words are withheld too.
+     * At ROUND_END the word is revealed to everybody so the "The word was: …"
+     * banner can render.
      */
     public roomStateFor(room: Room, playerId?: string): ClientRoom {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -286,6 +309,10 @@ export class GameEngine {
         const maskedWord = room.currentWord?.replace(/[a-zA-Z]/g, '_');
 
         if (!wordIsSecret || playerId === room.currentArtistId) {
+            return { ...visible, maskedWord };
+        }
+
+        if (room.players.find(p => p.id === playerId)?.hasGuessedCorrectly) {
             return { ...visible, maskedWord };
         }
 
