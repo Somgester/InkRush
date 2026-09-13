@@ -138,7 +138,7 @@ function App() {
         }
 
         if (currentPlayer.hasGuessedCorrectly && !previousCorrectGuessRef.current) {
-            const successSound = new Audio(`${import.meta.env.BASE_URL}sounds/mixkit-winning-a-coin-video-game-2069.wav`);
+            const successSound = new Audio(`${import.meta.env.BASE_URL}sounds/pong.mp3`);
             void successSound.play().catch(() => undefined);
         }
 
